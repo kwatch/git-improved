@@ -515,12 +515,14 @@ END
 
       @action.("rebase (move) current branch on top of other branch")
       @option.(:from, "--from=<commit-id>", "commit-id where current branch started")
-      def rebase(branch=nil, from: nil)
-        branch ||= _prev_branch()
+      def rebase(branch_onto, branch_upstream=nil, from: nil)
+        br_onto = _resolve_branch(branch_onto)
         if from
-          git "rebase", "--onto=#{branch}", from+"^", _curr_branch()
+          git "rebase", "--onto=#{br_onto}", from+"^"
+        elsif branch_upstream
+          git "rebase", "--onto=#{br_onto}", _resolve_branch(branch_upstream)
         else
-          git "rebase", branch
+          git "rebase", br_onto
         end
       end
 
