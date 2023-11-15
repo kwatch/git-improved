@@ -1273,13 +1273,20 @@ END
         git "config", "--unset", *opts, key
       end
 
-      @action.("list/get/set aliases of 'git' command (not of 'gi')")
-      def alias(key=nil, value=nil)
-        if value != nil     # set alias
-          git "config", "--global", "alias.#{key}", value
-        elsif key != nil    # get alias
-          git "config", "--global", "--get", "alias.#{key}"
-        else                # list aliases
+      @action.("list/get/set/delete aliases of 'git' (not of 'gi')", usage: [
+                 "                 # list aliases",
+                 "<name>           # get an alias",
+                 "<name> <value>   # set an alias",
+                 "<name> \"\"        # delete an alias",
+               ])
+      def alias(name=nil, value=nil)
+        if value == ""      # delete
+          git "config", "--global", "--unset", "alias.#{name}"
+        elsif value != nil  # set
+          git "config", "--global", "alias.#{name}", value
+        elsif name != nil   # get
+          git "config", "--global", "alias.#{name}"
+        else                # list
           command = "git config --get-regexp '^alias\\.' | sed -e 's/^alias\\.//;s/ /\\t= /'"
           echoback(command)
           output = `git config --get-regexp '^alias.'`
