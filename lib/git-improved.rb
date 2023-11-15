@@ -318,6 +318,15 @@ END
       false
     end
 
+    def system!(command)
+      out = $SUBPROCESS_OUTPUT || nil
+      if out
+        system command, exception: true, out: out, err: out
+      else
+        system command, exception: true
+      end
+    end
+
 
     ##
     ## status:
@@ -335,7 +344,8 @@ END
         command = "git status -sb #{path} | sed -n 's!/$!!;/^??/s/^?? //p' | xargs ls -dF --color"
         #command = "git status -sb #{path} | perl -ne 'print if s!^\\?\\? (.*?)/?$!\\1!' | xargs ls -dF --color"
         #command = "git status -sb #{path} | ruby -ne \"puts \\$1 if /^\\?\\? (.*?)\\/?$/\" | xargs ls -dF --color"
-        sys command
+        echoback command
+        system! command
         git "status", "-sb", "-uno", path
         #run_action "branch:current"
       end
