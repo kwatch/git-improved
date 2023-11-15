@@ -742,7 +742,11 @@ END
 
       @action.("correct the last commit", important: true)
       def correct()
-        git "commit", "--amend"
+        if `git diff --cached`.empty?
+          git "commit", "--amend"
+        else
+          git "commit", "--amend", "--no-edit"
+        end
       end
 
       @action.("correct the previous commit")
