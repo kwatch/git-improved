@@ -647,7 +647,7 @@ END
 
       @action.("rename a file or directory to new name")
       def rename(old_file, new_file)
-        ! File.exist(new_file)  or
+        ! File.exist?(new_file)  or
           raise action_failed("#{new_file}: Already exist.")
         git "mv", old_file, new_file
       end
