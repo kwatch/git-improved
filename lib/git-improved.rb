@@ -1230,21 +1230,22 @@ END
       @optionset.(optset)
       def list(global: false, local: false)
         opts = _build_config_options(global, local)
-        git "config", "--list", *opts
+        git "config", *opts, "--list"
       end
 
       @action.("show config value")
       @optionset.(optset)
-      def get(name, global: false, local: false)
+      def get(key, global: false, local: false)
         opts = _build_config_options(global, local)
-        git "config", "--get", *opts, name
+        #git "config", "--get", *opts, key
+        git "config", *opts, key
       end
 
       @action.("set config value")
       @optionset.(optset)
-      def set(name, value, global: false, local: false)
+      def set(key, value, global: false, local: false)
         opts = _build_config_options(global, local)
-        git "config", *opts, name, value
+        git "config", *opts, key, value
       end
 
       @action.("set user name and email", usage: [
@@ -1267,9 +1268,9 @@ END
 
       @action.("delete config item")
       @optionset.(optset)
-      def delete(name, global: false, local: false)
+      def delete(key, global: false, local: false)
         opts = _build_config_options(global, local)
-        git "config", "--unset", *opts, name
+        git "config", "--unset", *opts, key
       end
 
       @action.("list/get/set aliases of 'git' command (not of 'gi')")
