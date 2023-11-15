@@ -1205,20 +1205,24 @@ END
         return opts
       end
 
-      @action.("list/get/set config items", usage: [
-                 "                 # list config items",
-                 "<name>           # get config value",
-                 "<name> <value>   # set config value",
+      @action.("list/get/set/delete config values", usage: [
+                 "                # list config values",
+                 "<key>           # get config value",
+                 "<key> <value>   # set config value",
+                 "<key> \"\"        # delete config value",
                ])
       @optionset.(optset)
-      def handle(name=nil, value=nil, global: false, local: false)
+      def handle(key=nil, value=nil, global: false, local: false)
         opts = _build_config_options(global, local)
-        if name == nil
-          git "config", "--list", *opts
-        elsif value == nil
-          git "config", "--get", *opts, name
-        else
-          git "config", *opts, name, value
+        if key == nil                     # list
+          git "config", *opts, "--list"
+        elsif value == nil                # get
+          #git "config", "--get", *opts, key
+          git "config", *opts, key
+        elsif value == ""                 # delete
+          git "config", *opts, "--unset", key
+        else                              # set
+          git "config", *opts, key, value
         end
       end
 
