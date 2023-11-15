@@ -28,6 +28,7 @@ END
   #spec.extra_rdoc_files = ["README.md", "CHANGES.md"]
 
   spec.required_ruby_version = ">= 2.3"
-  spec.add_runtime_dependency     "benry-cmdapp"    , "~> 1"
-  spec.add_development_dependency "oktest"          , "~> 1"
+  spec.add_runtime_dependency     "benry-cmdapp"      , "~> 1"
+  spec.add_runtime_dependency     "benry-unixcommand" , "~> 1"
+  spec.add_development_dependency "oktest"            , "~> 1"
 end
