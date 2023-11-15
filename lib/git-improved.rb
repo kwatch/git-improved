@@ -569,8 +569,8 @@ END
       @option.(:full, "--full", "show full list")
       def list(path=".", filtertype: "registered", full: false)
         method_name = "__file__list__#{filtertype}"
-        respond_to?(method_name)  or (
-          s = self.methods.grep(/^__file__list__(.*)/) { $1 }.join('/')
+        respond_to?(method_name, true)  or (
+          s = self.private_methods.grep(/^__file__list__(.*)/) { $1 }.join('/')
           raise option_error("#{filtertype}: Uknown filter type (expected: #{s}})")
         )
         __send__(method_name, path, full)
