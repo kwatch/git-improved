@@ -302,8 +302,14 @@ END
       argstr = args.collect {|s| _qq(s) }.join(" ")
       echoback("git #{argstr}")
       return if $DRYRUN_MODE
-      system(["git", "git"], *args)  or
-        raise GitCommandFailed, "git #{argstr}"
+      out = $SUBPROCESS_OUTPUT || nil
+      if out
+        system(["git", "git"], *args, out: out, err: out)  or
+          raise GitCommandFailed, "git #{argstr}"
+      else
+        system(["git", "git"], *args)  or
+          raise GitCommandFailed, "git #{argstr}"
+      end
     end
 
     def git!(*args)
