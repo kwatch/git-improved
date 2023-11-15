@@ -186,13 +186,22 @@ END
     end
 
     def _parent_branch()
+      # ref: https://stackoverflow.com/questions/3161204/
+      #   git show-branch -a \
+      #   | sed 's/].*//' \
+      #   | grep '\*' \
+      #   | grep -v "\\[$(git branch --show-current)\$" \
+      #   | head -n1 \
+      #   | sed 's/^.*\[//'
       curr = _curr_branch()
-      output = `git show-branch`
+      end_str = "[#{curr}\n"
+      output = `git show-branch -a`
       output.each_line do |line|
-        if line =~ /^ *\+*\*\+* *\[(.*?)[\]~^]/ && $1 != curr
-          parent = $1
-          return $1
-        end
+        line = line.sub(/\].*/, '')
+        next unless line =~ /\*/
+        next if line.end_with?(end_str)
+        parent = line.sub(/^.*?\[/, '').strip()
+        return parent
       end
       return nil
     end
@@ -377,13 +386,16 @@ END
 
       @action.("show parent branch name (EXPERIMENTAL)")
       def parent()
-        command = <<'END'
-git show-branch \
- | egrep '^ *\+*\*\+* \[' \
- | egrep -v '^[ *+]*\['$(git branch --show-current)'[]~^]' \
- | sed -E 's/^[^]]*\[([^]~^]*).*/\\1/;q'
-END
-        echoback(command.gsub(/\n/, ''))
+        # ref: https://stackoverflow.com/questions/3161204/
+        command = <<~'END'
+          git show-branch -a \
+          | sed 's/].*//' \
+          | grep '\*' \
+          | grep -v "\\[$(git branch --show-current)\$" \
+          | head -n1 \
+          | sed 's/^.*\[//'
+        END
+        echoback(command.gsub(/\\\n/, '').strip())
         puts _parent_branch()
       end
 
