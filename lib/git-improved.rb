@@ -491,26 +491,25 @@ END
       end
 
       @action.("delete a branch")
-      @option.(:target, "-t <branch>", "target branch instead of current branch")
       @option.(:force,  "-f, --force", "delete forcedly even if not merged")
       @option.(:remote, "-r, --remote[=origin]", "delete a remote branch")
-      def delete(target: nil, force: false, remote: nil)
-        #target != nil  or
-        #  raise "Target branch name should be specified by `-t <branch>` option."
-        if target == nil
-          target = _curr_branch()
-          yes = _confirm "Are you sure to delete current branch '#{target}'?", default_yes: false
+      def delete(branch, force: false, remote: nil)
+        if branch == nil
+          branch = _curr_branch()
+          yes = _confirm "Are you sure to delete current branch '#{branch}'?", default_yes: false
           return unless yes
           git "checkout", "-" unless remote
+        else
+          branch = _resolve_branch(branch)
         end
         if remote
           remote = "origin" if remote == true
           opts = force ? ["-f"] : []
-          #git "push", *opts, remote, ":#{target}"
-          git "push", "--delete", *opts, remote, target
+          #git "push", *opts, remote, ":#{branch}"
+          git "push", "--delete", *opts, remote, branch
         else
-          opt = force ? "-d" : "-D"
-          git "branch", opt, target
+          opts = force ? ["-d"] : ["-D"]
+          git "branch", *opts, branch
         end
       end
 
