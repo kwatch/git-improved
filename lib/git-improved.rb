@@ -786,7 +786,7 @@ END
       @option.(:mainline, "-m <N>", "parent number (necessary to revert merge commit)")
       def revert(*commit, count: nil, mainline: nil)
         commits = commit
-        opts = []
+        opts = ["--no-edit"]
         opts << "-m" << mainline.to_s if mainline
         if count
           commits.length <= 1  or
