@@ -615,7 +615,7 @@ END
       public
 
       ## TODO: should move to 'file:' category?
-      @action.("register new files into the repository", important: true)
+      @action.("register files into the repository", important: true)
       @option.(:force, "-f, --force", "allow to register ignored files")
       @option.(:recursive, "-r, --recursive", "register files under directories")
       #@option.(:allow_empty_dir, "-e, --allow-empty-dir", "create '.gitkeep' to register empty directory")
