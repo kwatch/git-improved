@@ -851,7 +851,7 @@ END
     ##
     ## history:
     ##
-    category "history:" do
+    category "history:", action: "show" do
 
       @action.("show commit history in various format", important: true)
       @option.(:all, "-a, --all"   , "show history of all branches")
@@ -935,8 +935,8 @@ END
 
     end
 
-    define_alias "hist"      , ["history:show", "-F", "graph"]
-    define_alias "history"   , "history:show"
+    define_alias "hist"      , ["history", "-F", "graph"]
+    #define_alias "history"   , "history:show"
     define_alias "histedit"  , "history:edit:start"
     #define_alias "histedit:resume", "history:edit:resume"
     #define_alias "histedit:skip"  , "history:edit:skip"

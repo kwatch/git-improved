@@ -999,7 +999,7 @@ END
         end
         def _test_default_format(*opts)
           file1, file2 = _prepare("file8460")
-          output, sout = main "history:show", *opts
+          output, sout = main "history", *opts
           ok {sout} == "[gi]$ git log\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
@@ -1023,7 +1023,7 @@ END
         end
         spec "option '-F detailed' shows commit history in detailed format." do
           file1, file2 = _prepare("file0632")
-          output, sout = main "history:show", "-F", "detailed"
+          output, sout = main "history", "-F", "detailed"
           ok {sout} == "[gi]$ git log --format=fuller\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
@@ -1053,7 +1053,7 @@ END
         end
         spec "option '-F compact' shows history in compact format." do
           file1, file2 = _prepare("file5624")
-          output, sout = main "history:show", "-F", "compact"
+          output, sout = main "history", "-F", "compact"
           ok {sout} == "[gi]$ git log --oneline\n"
           ok {output} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file2}
@@ -1063,7 +1063,7 @@ END
         end
         spec "option '-F graph' shows commit history with branch graph." do
           file1, file2 = _prepare("file6071")
-          output, sout = main "history:show", "-F", "graph"
+          output, sout = main "history", "-F", "graph"
           ok {sout} == <<~"END"
             [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
           END
