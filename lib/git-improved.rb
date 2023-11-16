@@ -1050,8 +1050,14 @@ END
         end
 
         @action.("delete remote repository")
-        @option.(:name, "--name=<name>", "remote repository name (default: 'origin')")
-        def delete(name: "origin")
+        def delete(name=nil)
+          if name == nil
+            name = "origin"
+            if $stdin.tty?
+              q = "Are you sure to delete remote repo '\e[1m#{name}\e[0m'?"
+              return unless _confirm(q)
+            end
+          end
           git "remote", "rm", name
         end
 
