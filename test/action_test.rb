@@ -40,7 +40,7 @@ Oktest.scope do
         spec "create a new local branch from a remote branch" do
           ## TODO
           dryrun_mode do
-            sout = main "branch:checkout", "remoterepo"
+            _, sout = main "branch:checkout", "remoterepo"
             ok {unesc(sout)} == <<~"END"
               [gi]$ git checkout -b remoterepo origin/remoterepo
             END
@@ -51,12 +51,8 @@ Oktest.scope do
       topic 'branch:create' do
         spec "create a new branch, not switch to it" do
           br = "br7625"
-          capture_subprocess() do
-            sout = main "branch:create", br
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git branch br7625
-            END
-          end
+          _, sout = main "branch:create", br
+          ok {sout} == "[gi]$ git branch br7625\n"
           ok {`git branch`} =~ /br7625/
           curr = curr_branch()
           ok {curr} != br
@@ -66,12 +62,8 @@ Oktest.scope do
 
       topic 'branch:current' do
         spec "show current branch name" do
-          output = capture_subprocess() do
-            sout = main "branch:current"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git rev-parse --abbrev-ref HEAD
-            END
-          end
+          output, sout = main "branch:current"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
           ok {output} == "main\n"
         end
       end
@@ -81,12 +73,8 @@ Oktest.scope do
           br = "br6993"
           system! "git branch #{br}"
           ok {`git branch`} =~ /#{br}/
-          capture_subprocess() do
-            sout = main "branch:delete", br
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git branch -D br6993
-            END
-          end
+          _, sout = main "branch:delete", br
+          ok {sout} == "[gi]$ git branch -D br6993\n"
           ok {`git branch`} !~ /#{br}/
         end
       end
@@ -95,12 +83,8 @@ Oktest.scope do
         spec "create a new branch and switch to it" do
           br = "br2555"
           ok {curr_branch()} == "main"
-          capture_subprocess() do
-            sout = main "branch:fork", br
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git checkout -b br2555
-            END
-          end
+          _, sout = main "branch:fork", br
+          ok {sout} == "[gi]$ git checkout -b br2555\n"
           ok {curr_branch()} == br
         end
       end
@@ -111,27 +95,21 @@ Oktest.scope do
           system! "git checkout -q -b #{br}"
           ok {curr_branch()} == br
           system! "git commit --allow-empty -q -m 'test'"
-          capture_subprocess do
-            sout = main "branch:join", stdin: "\n"
-            ok {unesc(sout)} == <<~'END'
-              Merge current branch 'br0807' into 'main'. OK? [Y/n]: [gi]$ git checkout main
-              [gi]$ git merge --no-ff -
-            END
-          end
+          _, sout = main "branch:join", stdin: "\n"
+          ok {sout} == <<~"END"
+            Merge current branch '\e[1mbr0807\e[0m' into '\e[1mmain\e[0m'. OK? [Y/n]: [gi]$ git checkout main
+            [gi]$ git merge --no-ff -
+          END
           ok {curr_branch()} == "main"
         end
       end
 
       topic 'branch:list' do
         spec "list branches" do
-          output = capture_subprocess() do
-            system! "git branch br1845x"
-            system! "git branch br1845y"
-            sout = main "branch:list"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git branch -a
-            END
-          end
+          system! "git branch br1845x"
+          system! "git branch br1845y"
+          output, sout = main "branch:list"
+          ok {unesc(sout)} == "[gi]$ git branch -a\n"
           ok {output} =~ /^\* main$/
           ok {output} =~ /^  br1845x$/
           ok {output} =~ /^  br1845y$/
@@ -145,12 +123,10 @@ Oktest.scope do
           system! "git checkout -q #{br}"
           system! "git commit --allow-empty -q -m 'test commit on #{br}'"
           system! "git checkout -q main"
-          capture_subprocess() do
-            sout = main "branch:merge", stdin: "\n"
-            ok {unesc(sout)} == <<~'END'
-              Merge 'br7231' branch into 'main'. OK? [Y/n]: [gi]$ git merge --no-ff br7231
-            END
-          end
+          _, sout = main "branch:merge", stdin: "\n"
+          ok {unesc(sout)} == <<~'END'
+            Merge 'br7231' branch into 'main'. OK? [Y/n]: [gi]$ git merge --no-ff br7231
+          END
           ok {`git log -1 --oneline`} =~ /\A\h{7} Merge branch '#{br}'$/
           ok {`git log --oneline`} =~ /test commit on #{br}/
         end
@@ -163,22 +139,19 @@ Oktest.scope do
           system! "git checkout -q -b #{br}"
           system! "git commit --allow-empty -q -m 'for #{br} #2'"
           ok {curr_branch()} == br
-          capture_subprocess() do
-            sout = main "branch:parent"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
-              main
-            END
-          end
+          _, sout = main "branch:parent"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            main
+          END
+          #
           system! "git checkout -q -b #{br}x"
           ok {curr_branch()} == "#{br}x"
-          capture_subprocess() do
-            sout = main "branch:parent"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
-              br6488
-            END
-          end
+          _, sout = main "branch:parent"
+          ok {sout} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            br6488
+          END
         end
       end
 
@@ -187,21 +160,13 @@ Oktest.scope do
           br = "br0183"
           #
           system! "git checkout -q -b #{br}"
-          output = capture_subprocess() do
-            sout = main "branch:previous"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git rev-parse --abbrev-ref "@{-1}"
-            END
-          end
+          output, sout = main "branch:previous"
+          ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
           ok {output} == "main\n"
           #
           system! "git checkout -q -b #{br}xx"
-          output = capture_subprocess() do
-            sout = main "branch:previous"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git rev-parse --abbrev-ref "@{-1}"
-            END
-          end
+          output, sout = main "branch:previous"
+          ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
           ok {output} == "#{br}\n"
         end
       end
@@ -242,12 +207,8 @@ Oktest.scope do
             {==\\h{7}==} Initial commit (empty)
           END
           #
-          output = capture_subprocess() do
-            sout = main "branch:rebase", "-"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git rebase #{br}dev
-            END
-          end
+          output, sout = main "branch:rebase", "-"
+          ok {unesc(sout)} == "[gi]$ git rebase #{br}dev\n"
           ok {output}.end_with?("Successfully rebased and updated refs/heads/#{br}fix.\n")
           ok {`git log --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} on #{br}fix #4
@@ -273,12 +234,10 @@ Oktest.scope do
           END
           #
           ok {curr_branch()} == "#{br}fix"
-          output = capture_subprocess() do
-            sout = main "branch:rebase", "main", "#{br}dev"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git rebase --onto=main #{br}dev
-            END
-          end
+          output, sout = main "branch:rebase", "main", "#{br}dev"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git rebase --onto=main #{br}dev
+          END
           ok {output}.end_with?("Successfully rebased and updated refs/heads/#{br}fix.\n")
           ok {`git log --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} on #{br}fix #4
@@ -304,12 +263,10 @@ Oktest.scope do
           commit_id = $1
           ok {commit_id} != nil
           #
-          output = capture_subprocess() do
-            sout = main "branch:rebase", "-", "--from=#{commit_id}"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git rebase --onto=main #{commit_id}^
-            END
-          end
+          output, sout = main "branch:rebase", "-", "--from=#{commit_id}"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git rebase --onto=main #{commit_id}^
+          END
           ok {output}.end_with?("Successfully rebased and updated refs/heads/br3886dev.\n")
           ok {`git log --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} on #{br}dev #6
@@ -327,12 +284,8 @@ Oktest.scope do
           br = "br4571"
           system! "git checkout -q -b #{br}"
           ok {curr_branch()} == br
-          output = capture_subprocess() do
-            sout = main "branch:rename", "#{br}fix"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git branch -m br4571 br4571fix
-            END
-          end
+          output, sout = main "branch:rename", "#{br}fix"
+          ok {unesc(sout)} == "[gi]$ git branch -m br4571 br4571fix\n"
           ok {output} == ""
           ok {curr_branch()} == "#{br}fix"
         end
@@ -344,21 +297,13 @@ Oktest.scope do
           system! "git branch -q #{br}"
           ok {curr_branch()} == "main"
           #
-          output = capture_subprocess() do
-            sout = main "branch:switch", br
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git checkout #{br}
-            END
-          end
+          output, sout = main "branch:switch", br
+          ok {unesc(sout)} == "[gi]$ git checkout #{br}\n"
           ok {output} == "Switched to branch '#{br}'\n"
           ok {curr_branch()} == br
           #
-          output = capture_subprocess() do
-            sout = main "branch:switch"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git checkout -
-            END
-          end
+          output, sout = main "branch:switch"
+          ok {unesc(sout)} == "[gi]$ git checkout -\n"
           ok {output} == "Switched to branch 'main'\n"
           ok {curr_branch()} == "main"
         end
@@ -368,7 +313,7 @@ Oktest.scope do
         spec "git pull && git stash && git rebase && git stash pop" do
           ## TODO
           dryrun_mode do
-            sout = main "branch:update"
+            _, sout = main "branch:update"
             ok {unesc(sout)} == "[gi]$ git pull\n"
           end
         end
@@ -383,9 +328,7 @@ Oktest.scope do
         before do
           _reset_all_commits()
         end
-        spec "apply a commit to curr branch (known as 'cherry-pick')" do
-          br = "br7479"
-          file = "file2214.txt"
+        def _prepare(br, file)
           dummy_file(file, "A\nB\nC\nD\nE\n")
           system! "git add #{file}"
           system! "git commit -q -m 'add #{file}'"
@@ -396,18 +339,19 @@ Oktest.scope do
           writefile(file, "A\nB\nT\nD\nE\nF\n")    # replace C with T
           system! "git add -u ."
           system! "git commit -q -m 'replace C with T'"
-          commit_id = `git rev-parse HEAD`[0..6]
+          @commit_id = `git rev-parse HEAD`[0..6]
           writefile(file, "A\nB\nT\nD\nE\nF\nG\n") # append G
           system! "git add -u ."
           system! "git commit -q -m 'append G'"
+        end
+        spec "apply a commit to curr branch (known as 'cherry-pick')" do
+          br = "br7479"
+          file = "file2214.txt"
+          _prepare(br, file)
           #
           system! "git checkout -q main"
-          output = capture_subprocess() do
-            sout = main "commit:apply", commit_id
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git cherry-pick #{commit_id}
-            END
-          end
+          _, sout = main "commit:apply", @commit_id
+          ok {unesc(sout)} == "[gi]$ git cherry-pick #{@commit_id}\n"
           ok {`git log --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} replace C with T
             {==\\h{7}==} add #{file}
@@ -430,12 +374,8 @@ Oktest.scope do
           writefile(file, "A\nB\nC\n")
           system! "git add -u ."
           commit_id = `git rev-parse HEAD`
-          output = capture_subprocess() do
-            sout = main "commit:correct", "-M"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git commit --amend --no-edit
-            END
-          end
+          output, sout = main "commit:correct", "-M"
+          ok {unesc(sout)} == "[gi]$ git commit --amend --no-edit\n"
           ok {output} =~ /^ 1 file changed, 3 insertions\(\+\)$/
           ok {`git rev-parse HEAD`} != commit_id
           ok {`git log -1 --oneline`} =~ /\A\h{7} add #{file}\n\z/
@@ -447,40 +387,33 @@ Oktest.scope do
           file = "file9247.txt"
           dummy_file(file, "A\nB\n")
           system! "git add #{file}"
-          output = capture_subprocess() do
-            sout = main "commit:create", "add '#{file}'"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git commit -m "add '#{file}'"
-            END
-          end
+          output, sout = main "commit:create", "add '#{file}'"
+          ok {unesc(sout)} == "[gi]$ git commit -m \"add '#{file}'\"\n"
           ok {output} =~ /^ 1 file changed, 2 insertions\(\+\)$/
           ok {`git log -1 --oneline`} =~ /\A\h{7} add '#{file}'\n\z/
         end
       end
 
       topic 'commit:fixup' do
+        def _prepare(file1, file2)
+          dummy_file(file1, "A\nB\n")
+          system! "git add #{file1}"
+          system! "git commit -q -m \"add '#{file1}'\""
+          @commit_id = `git rev-parse HEAD`[0..6]
+          dummy_file(file2, "X\nY\n")
+          system! "git add #{file2}"
+          system! "git commit -q -m \"add '#{file2}'\""
+        end
         spec "correct the previous commit" do
           file = "file4150"
           file1 = file + "xx"
           file2 = file + "yy"
-          #
-          dummy_file(file1, "A\nB\n")
-          system! "git add #{file1}"
-          system! "git commit -q -m \"add '#{file1}'\""
-          commit_id = `git rev-parse HEAD`[0..6]
-          #
-          dummy_file(file2, "X\nY\n")
-          system! "git add #{file2}"
-          system! "git commit -q -m \"add '#{file2}'\""
+          _prepare(file1, file2)
           #
           writefile(file1, "A\nB\nC\n")
           system! "git add #{file1}"
-          output = capture_subprocess() do
-            sout = main "commit:fixup", commit_id
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git commit --fixup=#{commit_id}
-            END
-          end
+          output, sout = main "commit:fixup", @commit_id
+          ok {unesc(sout)} == "[gi]$ git commit --fixup=#{@commit_id}\n"
           ok {output} =~ /\[main \h{7}\] fixup! add '#{file1}'/
           ok {`git log -3 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} fixup! add '#{file1}'
@@ -507,12 +440,8 @@ Oktest.scope do
           _prepare(file1, file2)
           commit_id = `git rev-parse HEAD^`[0..6]
           #
-          output = capture_subprocess() do
-            sout = main "commit:revert", commit_id, "-M"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git revert --no-edit #{commit_id}
-            END
-          end
+          output, sout = main "commit:revert", commit_id, "-M"
+          ok {unesc(sout)} == "[gi]$ git revert --no-edit #{commit_id}\n"
           ok {output} =~ /\A\[main \h{7}\] Revert "add '#{file1}'"$/
           ok {`git log -3 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} Revert "add '#{file1}'"
@@ -551,24 +480,16 @@ Oktest.scope do
             {==\\h{7}==} add #{file}
           END
           #
-          output = capture_subprocess() do
-            sout = main "commit:rollback", "-n2"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git reset "HEAD~2"
-            END
-          end
+          output, sout = main "commit:rollback", "-n2"
+          ok {unesc(sout)} == "[gi]$ git reset \"HEAD~2\"\n"
           ok {output} =~ /^M\t#{file}$/
           ok {`git log -2 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} append B
             {==\\h{7}==} add #{file}
           END
           #
-          output = capture_subprocess() do
-            sout = main "commit:rollback"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git reset HEAD^
-            END
-          end
+          output, sout = main "commit:rollback"
+          ok {unesc(sout)} == "[gi]$ git reset HEAD^\n"
           ok {output} =~ /^M\t#{file}$/
           ok {`git log -1 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file}
@@ -598,12 +519,10 @@ Oktest.scope do
           file = "file2610.tmp"
           _prepare(file)
           commit_id = `git rev-parse HEAD^^`.strip()[0..6]
-          output = capture_subprocess() do
-            sout = main "commit:show", "-n1", commit_id
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git show "#{commit_id}~1..#{commit_id}"
-            END
-          end
+          output, sout = main "commit:show", "-n1", commit_id
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git show "#{commit_id}~1..#{commit_id}"
+          END
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author: user1 <user1@gmail.com>
@@ -624,12 +543,10 @@ Oktest.scope do
           file = "file9485.txt"
           _prepare(file)
           #
-          output = capture_subprocess() do
-            sout = main "commit:show", "-n1"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git show "HEAD~1..HEAD"
-            END
-          end
+          output, sout = main "commit:show", "-n1"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git show "HEAD~1..HEAD"
+          END
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author: user1 <user1@gmail.com>
@@ -648,12 +565,10 @@ Oktest.scope do
             +D
           END
           #
-          output = capture_subprocess() do
-            sout = main "commit:show", "-n2"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git show "HEAD~2..HEAD"
-            END
-          end
+          output, sout = main "commit:show", "-n2"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git show "HEAD~2..HEAD"
+          END
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author: user1 <user1@gmail.com>
@@ -698,38 +613,30 @@ Oktest.scope do
         spec "list/get/set/delete config values" do
           at_end { system! "git config user.name user1" }
           ## list
-          output = capture_subprocess() do
-            sout = main "config"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git config --list
-            END
-          end
+          output, sout = main "config"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git config --list
+          END
           ok {output} =~ /^user\.name=user1$/
           ok {output} =~ /^user\.email=user1@gmail\.com$/
           ## get
-          output = capture_subprocess() do
-            sout = main "config", "user.name"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git config user.name
-            END
-          end
+          output, sout = main "config", "user.name"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git config user.name
+          END
           ok {output} == "user1\n"
           ## set
-          output = capture_subprocess() do
-            sout = main "config", "user.name", "user2"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git config user.name user2
-            END
-          end
+          output, sout = main "config", "user.name", "user2"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git config user.name user2
+          END
           ok {output} == ""
           ok {`git config --get user.name`} == "user2\n"
           ## delete
-          output = capture_subprocess() do
-            sout = main "config", "user.name", ""
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git config --unset user.name
-            END
-          end
+          output, sout = main "config", "user.name", ""
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git config --unset user.name
+          END
           ok {output} == ""
           ok {`git config --local --get user.name`} == ""
         end
@@ -738,41 +645,33 @@ Oktest.scope do
       topic 'config:alias' do
         spec "list/get/set/delete aliases of 'git' (not of 'gi')" do
           ## list
-          output = capture_subprocess() do
-            sout = main "config:alias"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config --get-regexp '^alias\.' | sed -e 's/^alias\.//;s/ /\t= /'
-            END
-            lines = unesc(sout).each_line().to_a()
-            lines.shift()
-            ok {lines}.all? {|line| line =~ /^\S+\t= .*/ }
-          end
+          output, sout = main "config:alias"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config --get-regexp '^alias\.' | sed -e 's/^alias\.//;s/ /\t= /'
+          END
+          lines = unesc(sout).each_line().to_a()
+          lines.shift()
+          ok {lines}.all? {|line| line =~ /^\S+\t= .*/ }
           ok {output} == ""
           ## set
-          output = capture_subprocess() do
-            sout = main "config:alias", "br", "checkout -b"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git config --global alias.br "checkout -b"
-            END
-          end
+          output, sout = main "config:alias", "br", "checkout -b"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git config --global alias.br "checkout -b"
+          END
           ok {output} == ""
           ## get
-          output = capture_subprocess() do
-            sout = main "config:alias", "br"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git config --global alias.br
-            END
-          end
+          output, sout = main "config:alias", "br"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git config --global alias.br
+          END
           ok {output} == "checkout -b\n"
           ## delete
           ok {`git config --get alias.br`} == "checkout -b\n"
           ok {`git config --list`} =~ /^alias\.br=/
-          output = capture_subprocess() do
-            sout = main "config:alias", "br", ""
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git config --global --unset alias.br
-            END
-          end
+          output, sout = main "config:alias", "br", ""
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git config --global --unset alias.br
+          END
           ok {output} == ""
           ok {`git config --get alias.br`} == ""
           ok {`git config --list`} !~ /^alias\.br=/
@@ -783,12 +682,10 @@ Oktest.scope do
         spec "delete config item" do
           at_end { system! "git config user.email user1@gmail.com" }
           ok {`git config --local --list`} =~ /^user\.email=/
-          output = capture_subprocess() do
-            sout = main "config:delete", "user.email"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config --unset user.email
-            END
-          end
+          output, sout = main "config:delete", "user.email"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config --unset user.email
+          END
           ok {output} == ""
           ok {`git config --local --get user.email`} == ""
           ok {`git config --local --list`} !~ /^user\.email=/
@@ -797,24 +694,20 @@ Oktest.scope do
 
       topic 'config:get' do
         spec "show config value" do
-          output = capture_subprocess() do
-            sout = main "config:get", "user.email"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config user.email
-            END
-          end
+          output, sout = main "config:get", "user.email"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config user.email
+          END
           ok {output} == "user1@gmail.com\n"
         end
       end
 
       topic 'config:list' do
         spec "list config items" do
-          output = capture_subprocess() do
-            sout = main "config:list"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config --list
-            END
-          end
+          output, sout = main "config:list"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config --list
+          END
           lines = output.each_line.to_a()
           ok {lines}.all? {|line| line =~ /^\S+=.*/ }
         end
@@ -823,12 +716,10 @@ Oktest.scope do
       topic 'config:set' do
         spec "set config value" do
           at_end { system! "git config user.name user1" }
-          output = capture_subprocess() do
-            sout = main "config:set", "user.name", "user5"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config user.name user5
-            END
-          end
+          output, sout = main "config:set", "user.name", "user5"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config user.name user5
+          END
           ok {output} == ""
           ok {`git config --get user.name`} == "user5\n"
         end
@@ -841,43 +732,35 @@ Oktest.scope do
             system! "git config user.email user1@gmail.com"
           }
           ## user and email
-          output = capture_subprocess() do
-            sout = main "config:setuser", "user6", "user6@gmail.com"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config user.name user6
-              [gi]$ git config user.email user6@gmail.com
-            END
-          end
+          output, sout = main "config:setuser", "user6", "user6@gmail.com"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config user.name user6
+            [gi]$ git config user.email user6@gmail.com
+          END
           ok {output} == ""
           ok {`git config --get user.name`} == "user6\n"
           ok {`git config --get user.email`} == "user6@gmail.com\n"
           ## user
-          output = capture_subprocess() do
-            sout = main "config:setuser", "user7"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config user.name user7
-            END
-          end
+          output, sout = main "config:setuser", "user7"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config user.name user7
+          END
           ok {output} == ""
           ok {`git config --get user.name`} == "user7\n"
           ok {`git config --get user.email`} == "user6@gmail.com\n"
           ## email
-          output = capture_subprocess() do
-            sout = main "config:setuser", "user8@gmail.com"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config user.email user8@gmail.com
-            END
-          end
+          output, sout = main "config:setuser", "user8@gmail.com"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config user.email user8@gmail.com
+          END
           ok {output} == ""
           ok {`git config --get user.name`} == "user7\n"
           ok {`git config --get user.email`} == "user8@gmail.com\n"
           ## '-'
-          output = capture_subprocess() do
-            sout = main "config:setuser", "-", "user9@gmail.com"
-            ok {unesc(sout)}.start_with?(<<~'END')
-              [gi]$ git config user.email user9@gmail.com
-            END
-          end
+          output, sout = main "config:setuser", "-", "user9@gmail.com"
+          ok {unesc(sout)}.start_with?(<<~'END')
+            [gi]$ git config user.email user9@gmail.com
+          END
           ok {output} == ""
           ok {`git config --get user.name`} == "user7\n"
           ok {`git config --get user.email`} == "user9@gmail.com\n"
@@ -899,12 +782,8 @@ Oktest.scope do
           system! "git add #{file}"
           system! "git commit -q -m 'add #{file}'"
           writefile(file, "A\nB\n")
-          output = capture_subprocess() do
-            sout = main "file:changes"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git diff
-            END
-          end
+          output, sout = main "file:changes"
+          ok {unesc(sout)} == "[gi]$ git diff\n"
           ok {output} =~ partial_regexp(<<~"END")
             diff --git a/#{file} b/#{file}
             index {==\\h{7}==}..{==\\h{7}==} {==\\d+==}
@@ -924,12 +803,8 @@ Oktest.scope do
           system! "git add #{file}"
           system! "git commit -q -m 'add #{file}'"
           ok {file}.file_exist?
-          output = capture_subprocess() do
-            sout = main "file:delete", file
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git rm #{file}
-            END
-          end
+          output, sout = main "file:delete", file
+          ok {unesc(sout)} == "[gi]$ git rm #{file}\n"
           ok {output} == "rm 'file7807.tmp'\n"
           ok {file}.not_exist?
         end
@@ -954,41 +829,33 @@ Oktest.scope do
           writefile(".gitignore", "*~\n")
           at_end { rm_rf ".gitignore" }
           ## registered
-          output = capture_subprocess() do
-            sout = main "file:list"
-            ok {unesc(sout)} == "[gi]$ git ls-files .\n"
-          end
+          output, sout = main "file:list"
+          ok {unesc(sout)} == "[gi]$ git ls-files .\n"
           ok {output} == <<~'END'
             file1154.css
             file1154.txt
           END
           ## unregistered
-          output = capture_subprocess() do
-            sout = main "file:list", "-F", "unregistered"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git status -s . | grep '^?? '
-              ?? .gitignore
-              ?? file1154.json
-            END
-          end
+          output, sout = main "file:list", "-F", "unregistered"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git status -s . | grep '^?? '
+            ?? .gitignore
+            ?? file1154.json
+          END
           ok {output} == ""
           ## ignored
-          output = capture_subprocess() do
-            sout = main "file:list", "-F", "ignored"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git status -s --ignored . | grep '^!! '
-              !! file1154.json~
-            END
-          end
+          output, sout = main "file:list", "-F", "ignored"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git status -s --ignored . | grep '^!! '
+            !! file1154.json~
+          END
           ok {output} == ""
           ## missing
           File.unlink(file1)
-          output = capture_subprocess() do
-            sout = main "file:list", "-F", "missing"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git ls-files --deleted .
-            END
-          end
+          output, sout = main "file:list", "-F", "missing"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git ls-files --deleted .
+          END
           ok {output} == <<~"END"
             file1154.txt
           END
@@ -1008,10 +875,8 @@ Oktest.scope do
           system! "git add #{file1} #{file2} #{file3}"
           system! "git commit -q -m 'add #{file1}, #{file2} and #{file3}'"
           #
-          output = capture_subprocess() do
-            sout = main "file:move", file1, file3, "--to=#{dir}"
-            ok {unesc(sout)} == "[gi]$ git mv #{file1} #{file3} #{dir}\n"
-          end
+          output, sout = main "file:move", file1, file3, "--to=#{dir}"
+          ok {unesc(sout)} == "[gi]$ git mv #{file1} #{file3} #{dir}\n"
           ok {output} == ""
           ok {file1}.not_exist?
           ok {file2}.file_exist?
@@ -1025,10 +890,8 @@ Oktest.scope do
           dummy_file(file, "A\n")
           #
           ok {`git ls-files .`} !~ /^#{file}$/
-          output = capture_subprocess() do
-            sout = main "file:register", file
-            ok {unesc(sout)} == "[gi]$ git add #{file}\n"
-          end
+          output, sout = main "file:register", file
+          ok {unesc(sout)} == "[gi]$ git add #{file}\n"
           ok {output} == ""
           ok {`git ls-files .`} =~ /^#{file}$/
         end
@@ -1043,10 +906,8 @@ Oktest.scope do
           #
           ok {file}.file_exist?
           ok {file+".bkup"}.not_exist?
-          output = capture_subprocess() do
-            sout = main "file:rename", file, file+".bkup"
-            ok {unesc(sout)} == "[gi]$ git mv #{file} #{file}.bkup\n"
-          end
+          output, sout = main "file:rename", file, file+".bkup"
+          ok {unesc(sout)} == "[gi]$ git mv #{file} #{file}.bkup\n"
           ok {output} == ""
           ok {file}.not_exist?
           ok {file+".bkup"}.file_exist?
@@ -1073,10 +934,8 @@ Oktest.scope do
             +B
           END
           #
-          output = capture_subprocess() do
-            sout = main "file:restore"
-            ok {unesc(sout)} == "[gi]$ git reset --hard\n"
-          end
+          output, sout = main "file:restore"
+          ok {unesc(sout)} == "[gi]$ git reset --hard\n"
           ok {output} =~ partial_regexp(<<~"END")
             HEAD is now at {==\\h{7}==} add #{file}
           END
@@ -1089,7 +948,7 @@ Oktest.scope do
 
     topic 'help' do
       spec "print help message (of action if specified)" do
-        sout = main "help"
+        _, sout = main "help", tty: true
         ok {sout} == <<~"END"
 \e[1mgi\e[0m \e[2m(0.0.0)\e[0m --- Git Improved
 
@@ -1128,7 +987,7 @@ Oktest.scope do
 END
       end
       spec "prints help message of action if action name specified." do
-        sout = main "help", "config"
+        _, sout = main "help", "config", tty: true
         ok {sout} == <<~"END"
 \e[1mgi config\e[0m --- list/get/set/delete config values
 
@@ -1166,10 +1025,8 @@ END
         end
         spec "show history in compact format" do
           file1, file2 = _prepare("file5624")
-          output = capture_subprocess() do
-            sout = main "history:compact"
-            ok {unesc(sout)} == "[gi]$ git log --oneline\n"
-          end
+          output, sout = main "history:compact"
+          ok {unesc(sout)} == "[gi]$ git log --oneline\n"
           ok {output} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file2}
             {==\\h{7}==} add #{file1}
@@ -1184,10 +1041,8 @@ END
         end
         spec "show commit history in default format" do
           file1, file2 = _prepare("file8460")
-          output = capture_subprocess() do
-            sout = main "history:default"
-            ok {unesc(sout)} == "[gi]$ git log\n"
-          end
+          output, sout = main "history:default"
+          ok {unesc(sout)} == "[gi]$ git log\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author: user1 <user1@gmail.com>
@@ -1216,10 +1071,8 @@ END
         end
         spec "show commit history in detailed format" do
           file1, file2 = _prepare("file0632")
-          output = capture_subprocess() do
-            sout = main "history:detailed"
-            ok {unesc(sout)} == "[gi]$ git log --format=fuller\n"
-          end
+          output, sout = main "history:detailed"
+          ok {unesc(sout)} == "[gi]$ git log --format=fuller\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author:     user1 <user1@gmail.com>
@@ -1252,7 +1105,7 @@ END
         spec "cancel (or abort) `git rebase -i`" do
           ## TODO
           dryrun_mode do
-            sout = main "history:edit:cancel"
+            _, sout = main "history:edit:cancel"
             ok {unesc(sout)} == "[gi]$ git rebase --abort\n"
           end
         end
@@ -1262,7 +1115,7 @@ END
         spec "resume (= conitnue) suspended `git rebase -i`" do
           ## TODO
           dryrun_mode do
-            sout = main "history:edit:resume"
+            _, sout = main "history:edit:resume"
             ok {unesc(sout)} == "[gi]$ git rebase --continue\n"
           end
         end
@@ -1272,7 +1125,7 @@ END
         spec "skip current commit and resume" do
           ## TODO
           dryrun_mode do
-            sout = main "history:edit:skip"
+            _, sout = main "history:edit:skip"
             ok {unesc(sout)} == "[gi]$ git rebase --skip\n"
           end
         end
@@ -1282,7 +1135,7 @@ END
         spec "start `git rebase -i` to edit commit history", tag: "curr" do
           ## TODO
           dryrun_mode do
-            sout = main "history:edit:start", "-n2"
+            _, sout = main "history:edit:start", "-n2"
             ok {unesc(sout)} == "[gi]$ git rebase -i --autosquash \"HEAD~2\"\n"
           end
         end
@@ -1294,12 +1147,10 @@ END
         end
         spec "show commit history with branch graph", tag: "curr" do
           file1, file2 = _prepare("file6071")
-          output = capture_subprocess() do
-            sout = main "history:graph"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
-            END
-          end
+          output, sout = main "history:graph"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
+          END
           today = Time.now.strftime("%Y-%m-%d")
           ok {output} =~ partial_regexp(<<~"END")
             * {==\\h{7}==} #{today} |  (HEAD -> main) add #{file2}
@@ -1313,10 +1164,8 @@ END
         spec "show commits not uploaded yet" do
           ## TODO
           dryrun_mode do
-            sout = main "history:notuploaded"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git cherry -v
-            END
+            _, sout = main "history:notuploaded"
+            ok {unesc(sout)} == "[gi]$ git cherry -v\n"
           end
         end
       end
@@ -1328,22 +1177,16 @@ END
         spec "show commit history in various format" do
           file1, file2 = _prepare("file2146")
           ## compact
-          output = capture_subprocess() do
-            sout = main "history:show", "-F", "compact"
-            ok {unesc(sout)} == "[gi]$ git log --oneline\n"
-          end
+          output, sout = main "history:show", "-F", "compact"
+          ok {unesc(sout)} == "[gi]$ git log --oneline\n"
           ok {output} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file2}
             {==\\h{7}==} add #{file1}
             {==\\h{7}==} Initial commit (empty)
           END
           ## default
-          output = capture_subprocess() do
-            sout = main "history:show"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git log
-            END
-          end
+          output, sout = main "history:show"
+          ok {unesc(sout)} == "[gi]$ git log\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author: user1 <user1@gmail.com>
@@ -1364,10 +1207,8 @@ END
                 Initial commit (empty)
           END
           ## detailed
-          output = capture_subprocess() do
-            sout = main "history:show", "-F", "detailed"
-            ok {unesc(sout)} == "[gi]$ git log --format=fuller\n"
-          end
+          output, sout = main "history:show", "-F", "detailed"
+          ok {unesc(sout)} == "[gi]$ git log --format=fuller\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author:     user1 <user1@gmail.com>
@@ -1394,12 +1235,10 @@ END
                 Initial commit (empty)
           END
           ## graph
-          output = capture_subprocess() do
-            sout = main "history:show", "-F", "graph"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
-            END
-          end
+          output, sout = main "history:show", "-F", "graph"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
+          END
           today = Time.now.strftime("%Y-%m-%d")
           ok {output} =~ partial_regexp(<<~"END")
             * {==\\h{7}==} #{today} |  (HEAD -> main) add #{file2}
@@ -1419,7 +1258,7 @@ END
           file = "file1533.rb"
           at_end { rm_rf file }
           ok {file}.not_exist?
-          sout = main "misc:setupfile", file
+          _, sout = main "misc:setupfile", file
           ok {sout} == "[OK] file1533.rb generated.\n"
           ok {file}.file_exist?
           ok {readfile(file)} =~ /def hello\(name="world", lang: "en"\)/
@@ -1427,7 +1266,7 @@ END
         end
         spec "print to stdout if no args" do
           [[], ["-"]].each do |args|
-            sout = main "misc:setupfile", *args
+            _, sout = main "misc:setupfile", *args
             ok {sout} =~ /def hello\(name="world", lang: "en"\)/
             file = dummy_file(nil, sout)
             ok {`ruby -wc #{file}`} == "Syntax OK\n"
@@ -1448,7 +1287,7 @@ END
           Dir.mkdir dir
           Dir.chdir dir do
             dryrun_mode do
-              sout = main "repo:create", dir, "-u", "user1", "-e", "user1@gmail.com"
+              _, sout = main "repo:create", dir, "-u", "user1", "-e", "user1@gmail.com"
               ok {unesc(sout)} == <<~"END"
                 [gi]$ mkdir repo7594
                 [gi]$ cd repo7594
@@ -1472,22 +1311,20 @@ END
           dir = "repo1364"
           at_end { rm_rf dir }
           ok {dir}.not_exist?
-          capture_subprocess() do
-            sout = main "repo:create", dir, "-uuser1", "-ename1@gmail.com"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ mkdir repo1364
-              [gi]$ cd repo1364
-              [gi]$ git init --initial-branch=main
-              [gi]$ git config user.name user1
-              [gi]$ git config user.email name1@gmail.com
-              [gi]$ git commit --allow-empty -m "Initial commit (empty)"
-              [gi]$ echo '*~'           >  .gitignore
-              [gi]$ echo '*.DS_Store'   >> .gitignore
-              [gi]$ echo 'tmp/*'        >> .gitignore
-              [gi]$ echo '*.pyc'        >> .gitignore
-              [gi]$ cd -
-            END
-          end
+          _, sout = main "repo:create", dir, "-uuser1", "-ename1@gmail.com"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ mkdir repo1364
+            [gi]$ cd repo1364
+            [gi]$ git init --initial-branch=main
+            [gi]$ git config user.name user1
+            [gi]$ git config user.email name1@gmail.com
+            [gi]$ git commit --allow-empty -m "Initial commit (empty)"
+            [gi]$ echo '*~'           >  .gitignore
+            [gi]$ echo '*.DS_Store'   >> .gitignore
+            [gi]$ echo 'tmp/*'        >> .gitignore
+            [gi]$ echo '*.pyc'        >> .gitignore
+            [gi]$ cd -
+          END
           ok {dir}.dir_exist?
         end
       end
@@ -1499,19 +1336,17 @@ END
           Dir.mkdir dir
           Dir.chdir dir do
             ok {".git"}.not_exist?
-            capture_subprocess() do
-              sout = main "repo:init", "-uuser1", "-euser1@gmail.com"
-              ok {unesc(sout)} == <<~'END'
-                [gi]$ git init --initial-branch=main
-                [gi]$ git config user.name user1
-                [gi]$ git config user.email user1@gmail.com
-                [gi]$ git commit --allow-empty -m "Initial commit (empty)"
-                [gi]$ echo '*~'           >  .gitignore
-                [gi]$ echo '*.DS_Store'   >> .gitignore
-                [gi]$ echo 'tmp/*'        >> .gitignore
-                [gi]$ echo '*.pyc'        >> .gitignore
-              END
-            end
+            _, sout = main "repo:init", "-uuser1", "-euser1@gmail.com"
+            ok {unesc(sout)} == <<~'END'
+              [gi]$ git init --initial-branch=main
+              [gi]$ git config user.name user1
+              [gi]$ git config user.email user1@gmail.com
+              [gi]$ git commit --allow-empty -m "Initial commit (empty)"
+              [gi]$ echo '*~'           >  .gitignore
+              [gi]$ echo '*.DS_Store'   >> .gitignore
+              [gi]$ echo 'tmp/*'        >> .gitignore
+              [gi]$ echo '*.pyc'        >> .gitignore
+            END
             ok {".git"}.dir_exist?
           end
         end
@@ -1520,53 +1355,39 @@ END
       topic 'repo:remote' do
         spec "list/get/set/delete remote repository" do
           ## list (empty)
-          output = capture_subprocess() do
-            sout = main "repo:remote"
-            ok {unesc(sout)} == "[gi]$ git remote -v\n"
-          end
+          output, sout = main "repo:remote"
+          ok {unesc(sout)} == "[gi]$ git remote -v\n"
           ok {output} == ""
           ## set (add)
-          output = capture_subprocess() do
-            sout = main "repo:remote", "origin", "github:user1/repo1"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git remote add origin git@github.com:user1/repo1.git
-            END
-          end
+          output, sout = main "repo:remote", "origin", "github:user1/repo1"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git remote add origin git@github.com:user1/repo1.git
+          END
           ok {output} == ""
           ## get
-          output = capture_subprocess() do
-            sout = main "repo:remote", "origin"
-            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
-          end
+          output, sout = main "repo:remote", "origin"
+          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
           ok {output} == "git@github.com:user1/repo1.git\n"
           ## set
-          output = capture_subprocess() do
-            sout = main "repo:remote", "origin", "gitlab:user2/repo2"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
-            END
-          end
+          output, sout = main "repo:remote", "origin", "gitlab:user2/repo2"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
+          END
           ok {output} == ""
           ## list
-          output = capture_subprocess() do
-            sout = main "repo:remote"
-            ok {unesc(sout)} == "[gi]$ git remote -v\n"
-          end
+          output, sout = main "repo:remote"
+          ok {unesc(sout)} == "[gi]$ git remote -v\n"
           ok {output} == <<~"END"
             origin	git@gitlab.com:user2/repo2.git (fetch)
             origin	git@gitlab.com:user2/repo2.git (push)
           END
           ## delete
-          output = capture_subprocess() do
-            sout = main "repo:remote", "origin", ""
-            ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
-          end
+          output, sout = main "repo:remote", "origin", ""
+          ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
           ok {output} == ""
           ## list (empty)
-          output = capture_subprocess() do
-            sout = main "repo:remote"
-            ok {unesc(sout)} == "[gi]$ git remote -v\n"
-          end
+          output, sout = main "repo:remote"
+          ok {unesc(sout)} == "[gi]$ git remote -v\n"
           ok {output} == ""
         end
       end
@@ -1574,54 +1395,40 @@ END
       topic 'repo:remote:origin' do
         spec "get/set/delete origin (= default remote repository)" do
           ## get (empty)
-          output = capture_subprocess() do
-            sout, serr, status = main! "repo:remote:origin"
-            ok {status} != 0
-            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
-            ok {serr} == "\e[31m[ERROR]\e[0m Git command failed: git remote get-url origin\n"
-          end
+          output, sout, serr, status = main! "repo:remote:origin", tty: true
+          ok {status} != 0
+          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          ok {serr} == "\e[31m[ERROR]\e[0m Git command failed: git remote get-url origin\n"
           ok {output} == "error: No such remote 'origin'\n"
           ## set (add)
-          output = capture_subprocess() do
-            sout = main "repo:remote:origin", "github:user1/repo1"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git remote add origin git@github.com:user1/repo1.git
-            END
-          end
+          output, sout = main "repo:remote:origin", "github:user1/repo1"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git remote add origin git@github.com:user1/repo1.git
+          END
           ok {output} == ""
           ## get
-          output = capture_subprocess() do
-            sout = main "repo:remote:origin"
-            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
-          end
+          output, sout = main "repo:remote:origin"
+          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
           ok {output} == "git@github.com:user1/repo1.git\n"
           ## set
-          output = capture_subprocess() do
-            sout = main "repo:remote:origin", "gitlab:user2/repo2"
-            ok {unesc(sout)} == <<~"END"
-              [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
-            END
-          end
+          output, sout = main "repo:remote:origin", "gitlab:user2/repo2"
+          ok {unesc(sout)} == <<~"END"
+            [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
+          END
           ok {output} == ""
           ## get
-          output = capture_subprocess() do
-            sout = main "repo:remote:origin"
-            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
-          end
+          output, sout = main "repo:remote:origin"
+          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
           ok {output} == "git@gitlab.com:user2/repo2.git\n"
           ## delete
-          output = capture_subprocess() do
-            sout = main "repo:remote:origin", ""
-            ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
-          end
+          output, sout = main "repo:remote:origin", ""
+          ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
           ok {output} == ""
           ## get (empty)
-          output = capture_subprocess() do
-            sout, serr, status = main! "repo:remote:origin"
-            ok {status} != 0
-            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
-            ok {serr} == "\e[31m[ERROR]\e[0m Git command failed: git remote get-url origin\n"
-          end
+          output, sout, serr, status = main! "repo:remote:origin", tty: true
+          ok {status} != 0
+          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          ok {serr} == "\e[31m[ERROR]\e[0m Git command failed: git remote get-url origin\n"
           ok {output} == "error: No such remote 'origin'\n"
         end
       end
@@ -1631,10 +1438,8 @@ END
           system! "git remote add origin git@github.com/user1/repo1.git"
           ok {`git remote`} == "origin\n"
           #
-          output = capture_subprocess() do
-            sout = main "repo:remote:delete", "origin"
-            ok {unesc(sout)} == "[gi]$ git remote rm origin\n"
-          end
+          output, sout = main "repo:remote:delete", "origin"
+          ok {unesc(sout)} == "[gi]$ git remote rm origin\n"
           ok {output} == ""
           ok {`git remote`} == ""
         end
@@ -1646,14 +1451,10 @@ END
             system! "git remote remove origin"
             system! "git remote remove backup"
           }
-          output = capture_subprocess() do
-            system! "git remote add origin https://github.com/user1/repo1.git"
-            system! "git remote add backup https://gitlab.com/user1/repo1.git"
-            sout = main "repo:remote:list"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git remote --verbose
-            END
-          end
+          system! "git remote add origin https://github.com/user1/repo1.git"
+          system! "git remote add backup https://gitlab.com/user1/repo1.git"
+          output, sout = main "repo:remote:list"
+          ok {unesc(sout)} == "[gi]$ git remote --verbose\n"
           ok {output} == <<~'END'
             backup	https://gitlab.com/user1/repo1.git (fetch)
             backup	https://gitlab.com/user1/repo1.git (push)
@@ -1666,12 +1467,10 @@ END
       topic 'repo:remote:seturl' do
         spec "set remote repo url ('github:<user>/<proj>' available)" do
           ok {`git remote -v`} == ""
-          output = capture_subprocess() do
-            sout = main "repo:remote:seturl", "github:user3039/repo3039"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git remote add origin git@github.com:user3039/repo3039.git
-            END
-          end
+          output, sout = main "repo:remote:seturl", "github:user3039/repo3039"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git remote add origin git@github.com:user3039/repo3039.git
+          END
           ok {output} == ""
           ok {`git remote -v`} == <<~'END'
             origin	git@github.com:user3039/repo3039.git (fetch)
@@ -1697,13 +1496,8 @@ END
           system! "git commit -q -m 'add #{file}'"
           system! "echo BBB >> #{file}"
           ok {`git diff --cached`} == ""
-          output = capture_subprocess() do
-            sout = main "staging:add", "."
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git add -u .
-            END
-          end
-          diff = `git diff --cached`
+          output, sout = main "staging:add", "."
+          ok {unesc(sout)} == "[gi]$ git add -u .\n"
           ok {`git diff --cached`} =~ partial_regexp(<<~'END')
             diff --git a/file7198.txt b/file7198.txt
             index {==\h{7}==}..{==\h{7}==} {==\d+==}
@@ -1721,15 +1515,11 @@ END
         spec "delete all changes in staging area" do
           file = "file3415.txt"
           dummy_file file, "AAA\n"
-          output = capture_subprocess() do
-            system! "git add #{file}"
-            ok {`git diff --cached`} != ""
-            sout = main "staging:clear"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git reset HEAD
-            END
-            ok {`git diff --cached`} == ""
-          end
+          system! "git add #{file}"
+          ok {`git diff --cached`} != ""
+          _, sout = main "staging:clear"
+          ok {unesc(sout)} == "[gi]$ git reset HEAD\n"
+          ok {`git diff --cached`} == ""
         end
       end
 
@@ -1737,7 +1527,7 @@ END
         spec "edit changes in staging area" do
           ## TODO
           dryrun_mode do
-            sout = main "staging:edit"
+            _, sout = main "staging:edit"
             ok {unesc(sout)} == "[gi]$ git add --edit\n"
           end
         end
@@ -1747,13 +1537,9 @@ END
         spec "show changes in staging area" do
           file = "file2794.txt"
           dummy_file file, "AAA\n"
-          output = capture_subprocess() do
-            system! "git add #{file}"
-            sout = main "staging:show"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git diff --cached
-            END
-          end
+          system! "git add #{file}"
+          output, sout = main "staging:show"
+          ok {unesc(sout)} == "[gi]$ git diff --cached\n"
           ok {output} =~ partial_regexp(<<~'END')
             diff --git a/file2794.txt b/file2794.txt
             new file mode 100644
@@ -1797,19 +1583,15 @@ END
         spec "delete latest changes from stash" do
           file1 = dummy_stash1("file7294x.txt")
           file2 = dummy_stash2("file7294y.txt")
-          ok {`git stash list`} =~ partial_regexp(<<~'END')
-            stash@{0}: WIP on main: {==\h{7}==} add file7294y.txt
-            stash@{1}: WIP on main: {==\h{7}==} add file7294x.txt
+          ok {`git stash list`} =~ partial_regexp(<<~"END")
+            stash@{0}: WIP on main: {==\\h{7}==} add #{file2}
+            stash@{1}: WIP on main: {==\\h{7}==} add #{file1}
           END
-          output = capture_subprocess() do
-            sout = main "stash:drop"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git stash drop
-            END
-          end
+          output, sout = main "stash:drop"
+          ok {unesc(sout)} == "[gi]$ git stash drop\n"
           ok {output} =~ /\ADropped refs\/stash@\{0\} \(\w+\)$/
-          ok {`git stash list`} =~ partial_regexp(<<~'END')
-            stash@{0}: WIP on main: {==\h{7}==} add file7294x.txt
+          ok {`git stash list`} =~ partial_regexp(<<~"END")
+            stash@{0}: WIP on main: {==\\h{7}==} add #{file1}
           END
         end
       end
@@ -1818,15 +1600,11 @@ END
         spec "list stash history" do
           file1 = dummy_stash1("file3562x.txt")
           file2 = dummy_stash2("file3562y.txt")
-          output = capture_subprocess() do
-            sout = main "stash:list"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git stash list
-            END
-          end
-          ok {output} =~ partial_regexp(<<~'END')
-            stash@{0}: WIP on main: {==\h{7}==} add file3562y.txt
-            stash@{1}: WIP on main: {==\h{7}==} add file3562x.txt
+          output, sout = main "stash:list"
+          ok {unesc(sout)} == "[gi]$ git stash list\n"
+          ok {output} =~ partial_regexp(<<~"END")
+            stash@{0}: WIP on main: {==\\h{7}==} add #{file2}
+            stash@{1}: WIP on main: {==\\h{7}==} add #{file1}
           END
         end
       end
@@ -1838,22 +1616,14 @@ END
           ok {readfile(file1)} == "AAA\n"
           ok {readfile(file2)} == "DDD\n"
           #
-          output = capture_subprocess() do
-            sout = main "stash:pop"
-            ok {unesc(sout)} == <<~'END'
-            [gi]$ git stash pop
-            END
-          end
+          output, sout = main "stash:pop"
+          ok {unesc(sout)} == "[gi]$ git stash pop\n"
           ok {output} != ""
           ok {readfile(file1)} == "AAA\n"
           ok {readfile(file2)} == "DDD\nEEE\n"
           #
-          output = capture_subprocess() do
-            sout = main "stash:pop"
-            ok {unesc(sout)} == <<~'END'
-            [gi]$ git stash pop
-            END
-          end
+          output, sout = main "stash:pop"
+          ok {unesc(sout)} == "[gi]$ git stash pop\n"
           ok {output} != ""
           ok {readfile(file1)} == "AAA\nBBB\n"
           ok {readfile(file2)} == "DDD\nEEE\n"
@@ -1868,12 +1638,8 @@ END
           system! "echo KKK >> #{file1}"
           ok {`git diff`} != ""
           ok {`git stash list`} == ""
-          output = capture_subprocess() do
-            sout = main "stash:push"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git stash push
-            END
-          end
+          output, sout = main "stash:push"
+          ok {unesc(sout)} == "[gi]$ git stash push\n"
           ok {output} != ""
           ok {`git diff`} == ""
           ok {`git stash list`} =~ partial_regexp(<<~'END')
@@ -1885,40 +1651,30 @@ END
       topic 'stash:show' do
         spec "show changes on stash" do
           _reset_all_commits()    # !!!
-          file1 = dummy_stash1("file9510x.txt")
-          file2 = dummy_stash2("file9510y.txt")
-          expected_regexp = partial_regexp(<<~'END')
-            diff --git a/file9510y.txt b/file9510y.txt
-            index {==\h{7}==}..{==\h{7}==} {==\d+==}
-            --- a/file9510y.txt
-            +++ b/file9510y.txt
+          _file1 = dummy_stash1("file9510x.txt")
+          file2  = dummy_stash2("file9510y.txt")
+          expected_regexp = partial_regexp(<<~"END")
+            diff --git a/#{file2} b/#{file2}
+            index {==\\h{7}==}..{==\\h{7}==} {==\\d+==}
+            --- a/#{file2}
+            +++ b/#{file2}
             @@ -1 +1,2 @@
              DDD
             +EEE
           END
           #
-          output = capture_subprocess() do
-            sout = main "stash:show"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git stash show -p
-            END
-          end
+          output, sout = main "stash:show"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git stash show -p
+          END
           ok {output} =~ expected_regexp
           #
-          output = capture_subprocess() do
-            sout = main "stash:show", "-n", "1"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git stash show -p "stash@{0}"
-            END
-          end
+          output, sout = main "stash:show", "-n", "1"
+          ok {unesc(sout)} == "[gi]$ git stash show -p \"stash@{0}\"\n"
           ok {output} =~ expected_regexp
           #
-          output = capture_subprocess() do
-            sout = main "stash:show", "-n2"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git stash show -p "stash@{1}"
-            END
-          end
+          output, sout = main "stash:show", "-n2"
+          ok {unesc(sout)} == "[gi]$ git stash show -p \"stash@{1}\"\n"
           ok {output} =~ partial_regexp(<<~'END')
             diff --git a/file9510x.txt b/file9510x.txt
             index {==\h{7}==}..{==\h{7}==} {==\d+==}
@@ -1953,10 +1709,8 @@ END
 
       topic 'status:compact' do
         spec "show status in compact format" do
-          output = capture_subprocess() do
-            sout = main "status:compact"
-            ok {unesc(sout)} == "[gi]$ git status -sb\n"
-          end
+          output, sout = main "status:compact"
+          ok {unesc(sout)} == "[gi]$ git status -sb\n"
           ok {output} == <<~'END'
             ## main
              M file8040.txt
@@ -1967,10 +1721,8 @@ END
 
       topic 'status:default' do
         spec "show status in default format" do
-          output = capture_subprocess() do
-            sout = main "status:default"
-            ok {unesc(sout)} == "[gi]$ git status\n"
-          end
+          output, sout = main "status:default"
+          ok {unesc(sout)} == "[gi]$ git status\n"
           ok {output} == <<~'END'
 On branch main
 Changes not staged for commit:
@@ -1989,10 +1741,8 @@ no changes added to commit (use "git add" and/or "git commit -a")
 
       topic 'status:here' do
         spec "same as 'stats:compact .'" do
-          output = capture_subprocess() do
-            sout = main "status:here"
-            ok {unesc(sout)} == "[gi]$ git status -sb .\n"
-          end
+          output, sout = main "status:here"
+          ok {unesc(sout)} == "[gi]$ git status -sb .\n"
           ok {output} == <<~'END'
             ## main
              M file8040.txt
@@ -2003,13 +1753,11 @@ no changes added to commit (use "git add" and/or "git commit -a")
 
       topic 'status:info' do
         spec "show various infomation of current status" do
-          output = capture_subprocess() do
-            sout = main "status:info"
-            ok {unesc(sout)} == <<~'END'
-              [gi]$ git status -sb . | sed -n 's!/$!!;/^??/s/^?? //p' | xargs ls -dF --color
-              [gi]$ git status -sb -uno .
-            END
-          end
+          output, sout = main "status:info"
+          ok {unesc(sout)} == <<~'END'
+            [gi]$ git status -sb . | sed -n 's!/$!!;/^??/s/^?? //p' | xargs ls -dF --color
+            [gi]$ git status -sb -uno .
+          END
           ok {output} == <<~'END'
             file8040.html
             ## main
@@ -2027,7 +1775,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         spec "download and upload commits" do
           ## TODO
           dryrun_mode do
-            sout = main "sync:both"
+            _, sout = main "sync:both"
             ok {unesc(sout)} == <<~"END"
               [gi]$ git pull --prune
               [gi]$ git push
@@ -2040,7 +1788,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         spec "download commits from remote and apply them to local" do
           ## TODO
           dryrun_mode do
-            sout = main "sync:download"
+            _, sout = main "sync:download"
             ok {unesc(sout)} == "[gi]$ git pull --prune\n"
           end
         end
@@ -2050,7 +1798,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         spec "upload commits" do
           ## TODO
           dryrun_mode do
-            sout = main "sync:upload"
+            _, sout = main "sync:upload"
             ok {unesc(sout)} == "[gi]$ git push\n"
           end
         end
@@ -2068,10 +1816,8 @@ no changes added to commit (use "git add" and/or "git commit -a")
       topic 'tag:create' do
         spec "create a new tag" do
           tag = "tg6740"
-          output = capture_subprocess() do
-            sout = main "tag:create", tag
-            ok {unesc(sout)} == "[gi]$ git tag #{tag}\n"
-          end
+          output, sout = main "tag:create", tag
+          ok {unesc(sout)} == "[gi]$ git tag #{tag}\n"
           ok {output} == ""
           ok {`git tag --list`} == <<~"END"
             #{tag}
@@ -2084,10 +1830,8 @@ no changes added to commit (use "git add" and/or "git commit -a")
           tag = "tg6988"
           system! "git tag #{tag}"
           ok {`git tag --list`}.include?(tag)
-          output = capture_subprocess() do
-            sout = main "tag:delete", tag
-            ok {unesc(sout)} == "[gi]$ git tag -d tg6988\n"
-          end
+          output, sout = main "tag:delete", tag
+          ok {unesc(sout)} == "[gi]$ git tag -d tg6988\n"
           ok {output} =~ /\ADeleted tag '#{tag}' \(was \h{7}\)\n\z/
           ok {`git tag --list`}.NOT.include?(tag)
         end
@@ -2097,7 +1841,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         spec "download tags" do
           ## TODO
           dryrun_mode do
-            sout = main "tag:download"
+            _, sout = main "tag:download"
             ok {unesc(sout)} == "[gi]$ git fetch --tags --prune-tags\n"
           end
         end
@@ -2109,10 +1853,8 @@ no changes added to commit (use "git add" and/or "git commit -a")
           tag2 = "tg3352yy"
           system! "git tag #{tag1}"
           system! "git tag #{tag2}"
-          output = capture_subprocess() do
-            sout = main "tag:list"
-            ok {unesc(sout)} == "[gi]$ git tag -l\n"
-          end
+          output, sout = main "tag:list"
+          ok {unesc(sout)} == "[gi]$ git tag -l\n"
           ok {output} == <<~"END"
             #{tag1}
             #{tag2}
@@ -2124,7 +1866,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         spec "upload tags" do
           ## TODO
           dryrun_mode do
-            sout = main "tag:upload"
+            _, sout = main "tag:upload"
             ok {unesc(sout)} == "[gi]$ git push --tags\n"
           end
         end

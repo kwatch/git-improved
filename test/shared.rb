@@ -16,19 +16,21 @@ Oktest.global_scope do
   GitImproved::APP_CONFIG.app_command = "gi"
 
 
-  def main(*args, stdin: "")
-    sout, serr, status = main!(*args, stdin: stdin)
+  def main(*args, stdin: "", tty: false)
+    output, sout, serr, status = main!(*args, stdin: stdin, tty: tty)
     ok {serr} == ""
     ok {status} == 0
-    return sout
+    return output, sout
   end
 
-  def main!(*args, stdin: "")
-    status = nil
-    sout, serr = capture_sio(stdin, tty: true) do
-      status = GitImproved.main(args)
+  def main!(*args, stdin: "", tty: false)
+    status = sout = serr = nil
+    output = capture_subprocess do
+      sout, serr = capture_sio(stdin, tty: tty) do
+        status = GitImproved.main(args)
+      end
     end
-    return sout, serr, status
+    return output, sout, serr, status
   end
 
   def capture_subprocess(&block)
