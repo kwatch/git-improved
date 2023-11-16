@@ -945,10 +945,10 @@ END
 \e[1mgi config\e[0m --- list/get/set/delete config values
 
 \e[1;34mUsage:\e[0m
-  $ \e[1mgi config\e[0m [<options>]                 # list config values
-  $ \e[1mgi config\e[0m [<options>] <key>           # get config value
-  $ \e[1mgi config\e[0m [<options>] <key> <value>   # set config value
-  $ \e[1mgi config\e[0m [<options>] <key> ""        # delete config value
+  $ \e[1mgi config\e[0m [<options>]                 # list
+  $ \e[1mgi config\e[0m [<options>] <key>           # get
+  $ \e[1mgi config\e[0m [<options>] <key> <value>   # set
+  $ \e[1mgi config\e[0m [<options>] <key> ""        # delete
 
 \e[1;34mOptions:\e[0m
   -g, --global        : handle global config

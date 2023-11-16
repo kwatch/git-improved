@@ -1274,10 +1274,10 @@ END
       end
 
       @action.("list/get/set/delete config values", usage: [
-                 "                # list config values",
-                 "<key>           # get config value",
-                 "<key> <value>   # set config value",
-                 "<key> \"\"        # delete config value",
+                 "                # list",
+                 "<key>           # get",
+                 "<key> <value>   # set",
+                 "<key> \"\"        # delete",
                ])
       @optionset.(optset)
       def handle(key=nil, value=nil, global: false, local: false)
@@ -1313,10 +1313,10 @@ END
       end
 
       @action.("list/get/set/delete aliases of 'git' (not of 'gi')", usage: [
-                 "                 # list aliases",
-                 "<name>           # get an alias",
-                 "<name> <value>   # set an alias",
-                 "<name> \"\"        # delete an alias",
+                 "                 # list",
+                 "<name>           # get",
+                 "<name> <value>   # set",
+                 "<name> \"\"        # delete",
                ])
       def alias(name=nil, value=nil)
         if value == ""      # delete
