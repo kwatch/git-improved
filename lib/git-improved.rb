@@ -1091,13 +1091,16 @@ END
 
       @action.("delete a tag")
       @option.(:remote, "-r, --remote[=origin]", "delete from remote repository")
-      def delete(tag, remote: nil)
+      def delete(tag, *tag2, remote: nil)
+        tags = [tag] + tag2
         if remote
           remote = "origin" if remote == true
-          #git "push", "--delete", remote, tag     # may delete same name branch
-          git "push", remote, ":refs/tags/#{tag}"  # delete a tag safely
+          tags.each do |tag|
+            #git "push", "--delete", remote, tag     # may delete same name branch
+            git "push", remote, ":refs/tags/#{tag}"  # delete a tag safely
+          end
         else
-          git "tag", "-d", tag
+          git "tag", "-d", *tags
         end
       end
 
