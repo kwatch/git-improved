@@ -41,7 +41,7 @@ Oktest.scope do
           ## TODO
           dryrun_mode do
             _, sout = main "branch:checkout", "remoterepo"
-            ok {unesc(sout)} == <<~"END"
+            ok {sout} == <<~"END"
               [gi]$ git checkout -b remoterepo origin/remoterepo
             END
           end
@@ -109,7 +109,7 @@ Oktest.scope do
           system! "git branch br1845x"
           system! "git branch br1845y"
           output, sout = main "branch:list"
-          ok {unesc(sout)} == "[gi]$ git branch -a\n"
+          ok {sout} == "[gi]$ git branch -a\n"
           ok {output} =~ /^\* main$/
           ok {output} =~ /^  br1845x$/
           ok {output} =~ /^  br1845y$/
@@ -124,8 +124,8 @@ Oktest.scope do
           system! "git commit --allow-empty -q -m 'test commit on #{br}'"
           system! "git checkout -q main"
           _, sout = main "branch:merge", stdin: "\n"
-          ok {unesc(sout)} == <<~'END'
-            Merge 'br7231' branch into 'main'. OK? [Y/n]: [gi]$ git merge --no-ff br7231
+          ok {sout} == <<~"END"
+            Merge '\e[1mbr7231\e[0m' branch into '\e[1mmain\e[0m'. OK? [Y/n]: [gi]$ git merge --no-ff br7231
           END
           ok {`git log -1 --oneline`} =~ /\A\h{7} Merge branch '#{br}'$/
           ok {`git log --oneline`} =~ /test commit on #{br}/
@@ -140,7 +140,7 @@ Oktest.scope do
           system! "git commit --allow-empty -q -m 'for #{br} #2'"
           ok {curr_branch()} == br
           _, sout = main "branch:parent"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
             main
           END
@@ -161,12 +161,12 @@ Oktest.scope do
           #
           system! "git checkout -q -b #{br}"
           output, sout = main "branch:previous"
-          ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
           ok {output} == "main\n"
           #
           system! "git checkout -q -b #{br}xx"
           output, sout = main "branch:previous"
-          ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
           ok {output} == "#{br}\n"
         end
       end
@@ -208,7 +208,7 @@ Oktest.scope do
           END
           #
           output, sout = main "branch:rebase", "-"
-          ok {unesc(sout)} == "[gi]$ git rebase #{br}dev\n"
+          ok {sout} == "[gi]$ git rebase #{br}dev\n"
           ok {output}.end_with?("Successfully rebased and updated refs/heads/#{br}fix.\n")
           ok {`git log --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} on #{br}fix #4
@@ -235,7 +235,7 @@ Oktest.scope do
           #
           ok {curr_branch()} == "#{br}fix"
           output, sout = main "branch:rebase", "main", "#{br}dev"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git rebase --onto=main #{br}dev
           END
           ok {output}.end_with?("Successfully rebased and updated refs/heads/#{br}fix.\n")
@@ -264,7 +264,7 @@ Oktest.scope do
           ok {commit_id} != nil
           #
           output, sout = main "branch:rebase", "-", "--from=#{commit_id}"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git rebase --onto=main #{commit_id}^
           END
           ok {output}.end_with?("Successfully rebased and updated refs/heads/br3886dev.\n")
@@ -285,7 +285,7 @@ Oktest.scope do
           system! "git checkout -q -b #{br}"
           ok {curr_branch()} == br
           output, sout = main "branch:rename", "#{br}fix"
-          ok {unesc(sout)} == "[gi]$ git branch -m br4571 br4571fix\n"
+          ok {sout} == "[gi]$ git branch -m br4571 br4571fix\n"
           ok {output} == ""
           ok {curr_branch()} == "#{br}fix"
         end
@@ -298,12 +298,12 @@ Oktest.scope do
           ok {curr_branch()} == "main"
           #
           output, sout = main "branch:switch", br
-          ok {unesc(sout)} == "[gi]$ git checkout #{br}\n"
+          ok {sout} == "[gi]$ git checkout #{br}\n"
           ok {output} == "Switched to branch '#{br}'\n"
           ok {curr_branch()} == br
           #
           output, sout = main "branch:switch"
-          ok {unesc(sout)} == "[gi]$ git checkout -\n"
+          ok {sout} == "[gi]$ git checkout -\n"
           ok {output} == "Switched to branch 'main'\n"
           ok {curr_branch()} == "main"
         end
@@ -314,7 +314,7 @@ Oktest.scope do
           ## TODO
           dryrun_mode do
             _, sout = main "branch:update"
-            ok {unesc(sout)} == "[gi]$ git pull\n"
+            ok {sout} == "[gi]$ git pull\n"
           end
         end
       end
@@ -351,7 +351,7 @@ Oktest.scope do
           #
           system! "git checkout -q main"
           _, sout = main "commit:apply", @commit_id
-          ok {unesc(sout)} == "[gi]$ git cherry-pick #{@commit_id}\n"
+          ok {sout} == "[gi]$ git cherry-pick #{@commit_id}\n"
           ok {`git log --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} replace C with T
             {==\\h{7}==} add #{file}
@@ -375,7 +375,7 @@ Oktest.scope do
           system! "git add -u ."
           commit_id = `git rev-parse HEAD`
           output, sout = main "commit:correct", "-M"
-          ok {unesc(sout)} == "[gi]$ git commit --amend --no-edit\n"
+          ok {sout} == "[gi]$ git commit --amend --no-edit\n"
           ok {output} =~ /^ 1 file changed, 3 insertions\(\+\)$/
           ok {`git rev-parse HEAD`} != commit_id
           ok {`git log -1 --oneline`} =~ /\A\h{7} add #{file}\n\z/
@@ -388,7 +388,7 @@ Oktest.scope do
           dummy_file(file, "A\nB\n")
           system! "git add #{file}"
           output, sout = main "commit:create", "add '#{file}'"
-          ok {unesc(sout)} == "[gi]$ git commit -m \"add '#{file}'\"\n"
+          ok {sout} == "[gi]$ git commit -m \"add '#{file}'\"\n"
           ok {output} =~ /^ 1 file changed, 2 insertions\(\+\)$/
           ok {`git log -1 --oneline`} =~ /\A\h{7} add '#{file}'\n\z/
         end
@@ -413,7 +413,7 @@ Oktest.scope do
           writefile(file1, "A\nB\nC\n")
           system! "git add #{file1}"
           output, sout = main "commit:fixup", @commit_id
-          ok {unesc(sout)} == "[gi]$ git commit --fixup=#{@commit_id}\n"
+          ok {sout} == "[gi]$ git commit --fixup=#{@commit_id}\n"
           ok {output} =~ /\[main \h{7}\] fixup! add '#{file1}'/
           ok {`git log -3 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} fixup! add '#{file1}'
@@ -441,7 +441,7 @@ Oktest.scope do
           commit_id = `git rev-parse HEAD^`[0..6]
           #
           output, sout = main "commit:revert", commit_id, "-M"
-          ok {unesc(sout)} == "[gi]$ git revert --no-edit #{commit_id}\n"
+          ok {sout} == "[gi]$ git revert --no-edit #{commit_id}\n"
           ok {output} =~ /\A\[main \h{7}\] Revert "add '#{file1}'"$/
           ok {`git log -3 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} Revert "add '#{file1}'"
@@ -481,7 +481,7 @@ Oktest.scope do
           END
           #
           output, sout = main "commit:rollback", "-n2"
-          ok {unesc(sout)} == "[gi]$ git reset \"HEAD~2\"\n"
+          ok {sout} == "[gi]$ git reset \"HEAD~2\"\n"
           ok {output} =~ /^M\t#{file}$/
           ok {`git log -2 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} append B
@@ -489,7 +489,7 @@ Oktest.scope do
           END
           #
           output, sout = main "commit:rollback"
-          ok {unesc(sout)} == "[gi]$ git reset HEAD^\n"
+          ok {sout} == "[gi]$ git reset HEAD^\n"
           ok {output} =~ /^M\t#{file}$/
           ok {`git log -1 --oneline`} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file}
@@ -520,7 +520,7 @@ Oktest.scope do
           _prepare(file)
           commit_id = `git rev-parse HEAD^^`.strip()[0..6]
           output, sout = main "commit:show", "-n1", commit_id
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git show "#{commit_id}~1..#{commit_id}"
           END
           ok {output} =~ partial_regexp(<<~"END")
@@ -544,7 +544,7 @@ Oktest.scope do
           _prepare(file)
           #
           output, sout = main "commit:show", "-n1"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git show "HEAD~1..HEAD"
           END
           ok {output} =~ partial_regexp(<<~"END")
@@ -566,7 +566,7 @@ Oktest.scope do
           END
           #
           output, sout = main "commit:show", "-n2"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git show "HEAD~2..HEAD"
           END
           ok {output} =~ partial_regexp(<<~"END")
@@ -614,27 +614,27 @@ Oktest.scope do
           at_end { system! "git config user.name user1" }
           ## list
           output, sout = main "config"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git config --list
           END
           ok {output} =~ /^user\.name=user1$/
           ok {output} =~ /^user\.email=user1@gmail\.com$/
           ## get
           output, sout = main "config", "user.name"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git config user.name
           END
           ok {output} == "user1\n"
           ## set
           output, sout = main "config", "user.name", "user2"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git config user.name user2
           END
           ok {output} == ""
           ok {`git config --get user.name`} == "user2\n"
           ## delete
           output, sout = main "config", "user.name", ""
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git config --unset user.name
           END
           ok {output} == ""
@@ -646,22 +646,22 @@ Oktest.scope do
         spec "list/get/set/delete aliases of 'git' (not of 'gi')" do
           ## list
           output, sout = main "config:alias"
-          ok {unesc(sout)}.start_with?(<<~'END')
+          ok {sout}.start_with?(<<~'END')
             [gi]$ git config --get-regexp '^alias\.' | sed -e 's/^alias\.//;s/ /\t= /'
           END
-          lines = unesc(sout).each_line().to_a()
+          lines = sout.each_line().to_a()
           lines.shift()
           ok {lines}.all? {|line| line =~ /^\S+\t= .*/ }
           ok {output} == ""
           ## set
           output, sout = main "config:alias", "br", "checkout -b"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git config --global alias.br "checkout -b"
           END
           ok {output} == ""
           ## get
           output, sout = main "config:alias", "br"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git config --global alias.br
           END
           ok {output} == "checkout -b\n"
@@ -669,7 +669,7 @@ Oktest.scope do
           ok {`git config --get alias.br`} == "checkout -b\n"
           ok {`git config --list`} =~ /^alias\.br=/
           output, sout = main "config:alias", "br", ""
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git config --global --unset alias.br
           END
           ok {output} == ""
@@ -686,7 +686,7 @@ Oktest.scope do
           }
           ## user and email
           output, sout = main "config:setuser", "user6", "user6@gmail.com"
-          ok {unesc(sout)}.start_with?(<<~'END')
+          ok {sout}.start_with?(<<~'END')
             [gi]$ git config user.name user6
             [gi]$ git config user.email user6@gmail.com
           END
@@ -695,7 +695,7 @@ Oktest.scope do
           ok {`git config --get user.email`} == "user6@gmail.com\n"
           ## user
           output, sout = main "config:setuser", "user7"
-          ok {unesc(sout)}.start_with?(<<~'END')
+          ok {sout}.start_with?(<<~'END')
             [gi]$ git config user.name user7
           END
           ok {output} == ""
@@ -703,7 +703,7 @@ Oktest.scope do
           ok {`git config --get user.email`} == "user6@gmail.com\n"
           ## email
           output, sout = main "config:setuser", "user8@gmail.com"
-          ok {unesc(sout)}.start_with?(<<~'END')
+          ok {sout}.start_with?(<<~'END')
             [gi]$ git config user.email user8@gmail.com
           END
           ok {output} == ""
@@ -711,7 +711,7 @@ Oktest.scope do
           ok {`git config --get user.email`} == "user8@gmail.com\n"
           ## '-'
           output, sout = main "config:setuser", "-", "user9@gmail.com"
-          ok {unesc(sout)}.start_with?(<<~'END')
+          ok {sout}.start_with?(<<~'END')
             [gi]$ git config user.email user9@gmail.com
           END
           ok {output} == ""
@@ -736,7 +736,7 @@ Oktest.scope do
           system! "git commit -q -m 'add #{file}'"
           writefile(file, "A\nB\n")
           output, sout = main "file:changes"
-          ok {unesc(sout)} == "[gi]$ git diff\n"
+          ok {sout} == "[gi]$ git diff\n"
           ok {output} =~ partial_regexp(<<~"END")
             diff --git a/#{file} b/#{file}
             index {==\\h{7}==}..{==\\h{7}==} {==\\d+==}
@@ -757,7 +757,7 @@ Oktest.scope do
           system! "git commit -q -m 'add #{file}'"
           ok {file}.file_exist?
           output, sout = main "file:delete", file
-          ok {unesc(sout)} == "[gi]$ git rm #{file}\n"
+          ok {sout} == "[gi]$ git rm #{file}\n"
           ok {output} == "rm 'file7807.tmp'\n"
           ok {file}.not_exist?
         end
@@ -783,14 +783,14 @@ Oktest.scope do
           at_end { rm_rf ".gitignore" }
           ## registered
           output, sout = main "file:list"
-          ok {unesc(sout)} == "[gi]$ git ls-files .\n"
+          ok {sout} == "[gi]$ git ls-files .\n"
           ok {output} == <<~'END'
             file1154.css
             file1154.txt
           END
           ## unregistered
           output, sout = main "file:list", "-F", "unregistered"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git status -s . | grep '^?? '
             ?? .gitignore
             ?? file1154.json
@@ -798,7 +798,7 @@ Oktest.scope do
           ok {output} == ""
           ## ignored
           output, sout = main "file:list", "-F", "ignored"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git status -s --ignored . | grep '^!! '
             !! file1154.json~
           END
@@ -806,7 +806,7 @@ Oktest.scope do
           ## missing
           File.unlink(file1)
           output, sout = main "file:list", "-F", "missing"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git ls-files --deleted .
           END
           ok {output} == <<~"END"
@@ -829,7 +829,7 @@ Oktest.scope do
           system! "git commit -q -m 'add #{file1}, #{file2} and #{file3}'"
           #
           output, sout = main "file:move", file1, file3, "--to=#{dir}"
-          ok {unesc(sout)} == "[gi]$ git mv #{file1} #{file3} #{dir}\n"
+          ok {sout} == "[gi]$ git mv #{file1} #{file3} #{dir}\n"
           ok {output} == ""
           ok {file1}.not_exist?
           ok {file2}.file_exist?
@@ -844,7 +844,7 @@ Oktest.scope do
           #
           ok {`git ls-files .`} !~ /^#{file}$/
           output, sout = main "file:register", file
-          ok {unesc(sout)} == "[gi]$ git add #{file}\n"
+          ok {sout} == "[gi]$ git add #{file}\n"
           ok {output} == ""
           ok {`git ls-files .`} =~ /^#{file}$/
         end
@@ -860,7 +860,7 @@ Oktest.scope do
           ok {file}.file_exist?
           ok {file+".bkup"}.not_exist?
           output, sout = main "file:rename", file, file+".bkup"
-          ok {unesc(sout)} == "[gi]$ git mv #{file} #{file}.bkup\n"
+          ok {sout} == "[gi]$ git mv #{file} #{file}.bkup\n"
           ok {output} == ""
           ok {file}.not_exist?
           ok {file+".bkup"}.file_exist?
@@ -888,7 +888,7 @@ Oktest.scope do
           END
           #
           output, sout = main "file:restore"
-          ok {unesc(sout)} == "[gi]$ git reset --hard\n"
+          ok {sout} == "[gi]$ git reset --hard\n"
           ok {output} =~ partial_regexp(<<~"END")
             HEAD is now at {==\\h{7}==} add #{file}
           END
@@ -979,7 +979,7 @@ END
         spec "show history in compact format" do
           file1, file2 = _prepare("file5624")
           output, sout = main "history:compact"
-          ok {unesc(sout)} == "[gi]$ git log --oneline\n"
+          ok {sout} == "[gi]$ git log --oneline\n"
           ok {output} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file2}
             {==\\h{7}==} add #{file1}
@@ -995,7 +995,7 @@ END
         spec "show commit history in default format" do
           file1, file2 = _prepare("file8460")
           output, sout = main "history:default"
-          ok {unesc(sout)} == "[gi]$ git log\n"
+          ok {sout} == "[gi]$ git log\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author: user1 <user1@gmail.com>
@@ -1025,7 +1025,7 @@ END
         spec "show commit history in detailed format" do
           file1, file2 = _prepare("file0632")
           output, sout = main "history:detailed"
-          ok {unesc(sout)} == "[gi]$ git log --format=fuller\n"
+          ok {sout} == "[gi]$ git log --format=fuller\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author:     user1 <user1@gmail.com>
@@ -1059,7 +1059,7 @@ END
           ## TODO
           dryrun_mode do
             _, sout = main "history:edit:cancel"
-            ok {unesc(sout)} == "[gi]$ git rebase --abort\n"
+            ok {sout} == "[gi]$ git rebase --abort\n"
           end
         end
       end
@@ -1069,7 +1069,7 @@ END
           ## TODO
           dryrun_mode do
             _, sout = main "history:edit:resume"
-            ok {unesc(sout)} == "[gi]$ git rebase --continue\n"
+            ok {sout} == "[gi]$ git rebase --continue\n"
           end
         end
       end
@@ -1079,7 +1079,7 @@ END
           ## TODO
           dryrun_mode do
             _, sout = main "history:edit:skip"
-            ok {unesc(sout)} == "[gi]$ git rebase --skip\n"
+            ok {sout} == "[gi]$ git rebase --skip\n"
           end
         end
       end
@@ -1089,7 +1089,7 @@ END
           ## TODO
           dryrun_mode do
             _, sout = main "history:edit:start", "-n2"
-            ok {unesc(sout)} == "[gi]$ git rebase -i --autosquash \"HEAD~2\"\n"
+            ok {sout} == "[gi]$ git rebase -i --autosquash \"HEAD~2\"\n"
           end
         end
       end
@@ -1101,7 +1101,7 @@ END
         spec "show commit history with branch graph", tag: "curr" do
           file1, file2 = _prepare("file6071")
           output, sout = main "history:graph"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
           END
           today = Time.now.strftime("%Y-%m-%d")
@@ -1118,7 +1118,7 @@ END
           ## TODO
           dryrun_mode do
             _, sout = main "history:notuploaded"
-            ok {unesc(sout)} == "[gi]$ git cherry -v\n"
+            ok {sout} == "[gi]$ git cherry -v\n"
           end
         end
       end
@@ -1131,7 +1131,7 @@ END
           file1, file2 = _prepare("file2146")
           ## compact
           output, sout = main "history:show", "-F", "compact"
-          ok {unesc(sout)} == "[gi]$ git log --oneline\n"
+          ok {sout} == "[gi]$ git log --oneline\n"
           ok {output} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file2}
             {==\\h{7}==} add #{file1}
@@ -1139,7 +1139,7 @@ END
           END
           ## default
           output, sout = main "history:show"
-          ok {unesc(sout)} == "[gi]$ git log\n"
+          ok {sout} == "[gi]$ git log\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author: user1 <user1@gmail.com>
@@ -1161,7 +1161,7 @@ END
           END
           ## detailed
           output, sout = main "history:show", "-F", "detailed"
-          ok {unesc(sout)} == "[gi]$ git log --format=fuller\n"
+          ok {sout} == "[gi]$ git log --format=fuller\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
             Author:     user1 <user1@gmail.com>
@@ -1189,7 +1189,7 @@ END
           END
           ## graph
           output, sout = main "history:show", "-F", "graph"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
           END
           today = Time.now.strftime("%Y-%m-%d")
@@ -1241,7 +1241,7 @@ END
           Dir.chdir dir do
             dryrun_mode do
               _, sout = main "repo:create", dir, "-u", "user1", "-e", "user1@gmail.com"
-              ok {unesc(sout)} == <<~"END"
+              ok {sout} == <<~"END"
                 [gi]$ mkdir repo7594
                 [gi]$ cd repo7594
                 [gi]$ git init --initial-branch=main
@@ -1265,7 +1265,7 @@ END
           at_end { rm_rf dir }
           ok {dir}.not_exist?
           _, sout = main "repo:create", dir, "-uuser1", "-ename1@gmail.com"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ mkdir repo1364
             [gi]$ cd repo1364
             [gi]$ git init --initial-branch=main
@@ -1290,7 +1290,7 @@ END
           Dir.chdir dir do
             ok {".git"}.not_exist?
             _, sout = main "repo:init", "-uuser1", "-euser1@gmail.com"
-            ok {unesc(sout)} == <<~'END'
+            ok {sout} == <<~'END'
               [gi]$ git init --initial-branch=main
               [gi]$ git config user.name user1
               [gi]$ git config user.email user1@gmail.com
@@ -1309,38 +1309,38 @@ END
         spec "list/get/set/delete remote repository" do
           ## list (empty)
           output, sout = main "repo:remote"
-          ok {unesc(sout)} == "[gi]$ git remote -v\n"
+          ok {sout} == "[gi]$ git remote -v\n"
           ok {output} == ""
           ## set (add)
           output, sout = main "repo:remote", "origin", "github:user1/repo1"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git remote add origin git@github.com:user1/repo1.git
           END
           ok {output} == ""
           ## get
           output, sout = main "repo:remote", "origin"
-          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          ok {sout} == "[gi]$ git remote get-url origin\n"
           ok {output} == "git@github.com:user1/repo1.git\n"
           ## set
           output, sout = main "repo:remote", "origin", "gitlab:user2/repo2"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
           END
           ok {output} == ""
           ## list
           output, sout = main "repo:remote"
-          ok {unesc(sout)} == "[gi]$ git remote -v\n"
+          ok {sout} == "[gi]$ git remote -v\n"
           ok {output} == <<~"END"
             origin	git@gitlab.com:user2/repo2.git (fetch)
             origin	git@gitlab.com:user2/repo2.git (push)
           END
           ## delete
           output, sout = main "repo:remote", "origin", ""
-          ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
+          ok {sout} == "[gi]$ git remote remove origin\n"
           ok {output} == ""
           ## list (empty)
           output, sout = main "repo:remote"
-          ok {unesc(sout)} == "[gi]$ git remote -v\n"
+          ok {sout} == "[gi]$ git remote -v\n"
           ok {output} == ""
         end
       end
@@ -1355,27 +1355,27 @@ END
           ok {output} == "error: No such remote 'origin'\n"
           ## set (add)
           output, sout = main "repo:remote:origin", "github:user1/repo1"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git remote add origin git@github.com:user1/repo1.git
           END
           ok {output} == ""
           ## get
           output, sout = main "repo:remote:origin"
-          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          ok {sout} == "[gi]$ git remote get-url origin\n"
           ok {output} == "git@github.com:user1/repo1.git\n"
           ## set
           output, sout = main "repo:remote:origin", "gitlab:user2/repo2"
-          ok {unesc(sout)} == <<~"END"
+          ok {sout} == <<~"END"
             [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
           END
           ok {output} == ""
           ## get
           output, sout = main "repo:remote:origin"
-          ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          ok {sout} == "[gi]$ git remote get-url origin\n"
           ok {output} == "git@gitlab.com:user2/repo2.git\n"
           ## delete
           output, sout = main "repo:remote:origin", ""
-          ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
+          ok {sout} == "[gi]$ git remote remove origin\n"
           ok {output} == ""
           ## get (empty)
           output, sout, serr, status = main! "repo:remote:origin", tty: true
@@ -1404,7 +1404,7 @@ END
           system! "echo BBB >> #{file}"
           ok {`git diff --cached`} == ""
           output, sout = main "staging:add", "."
-          ok {unesc(sout)} == "[gi]$ git add -u .\n"
+          ok {sout} == "[gi]$ git add -u .\n"
           ok {`git diff --cached`} =~ partial_regexp(<<~'END')
             diff --git a/file7198.txt b/file7198.txt
             index {==\h{7}==}..{==\h{7}==} {==\d+==}
@@ -1425,7 +1425,7 @@ END
           system! "git add #{file}"
           ok {`git diff --cached`} != ""
           _, sout = main "staging:clear"
-          ok {unesc(sout)} == "[gi]$ git reset HEAD\n"
+          ok {sout} == "[gi]$ git reset HEAD\n"
           ok {`git diff --cached`} == ""
         end
       end
@@ -1435,7 +1435,7 @@ END
           ## TODO
           dryrun_mode do
             _, sout = main "staging:edit"
-            ok {unesc(sout)} == "[gi]$ git add --edit\n"
+            ok {sout} == "[gi]$ git add --edit\n"
           end
         end
       end
@@ -1446,7 +1446,7 @@ END
           dummy_file file, "AAA\n"
           system! "git add #{file}"
           output, sout = main "staging:show"
-          ok {unesc(sout)} == "[gi]$ git diff --cached\n"
+          ok {sout} == "[gi]$ git diff --cached\n"
           ok {output} =~ partial_regexp(<<~'END')
             diff --git a/file2794.txt b/file2794.txt
             new file mode 100644
@@ -1495,7 +1495,7 @@ END
             stash@{1}: WIP on main: {==\\h{7}==} add #{file1}
           END
           output, sout = main "stash:drop"
-          ok {unesc(sout)} == "[gi]$ git stash drop\n"
+          ok {sout} == "[gi]$ git stash drop\n"
           ok {output} =~ /\ADropped refs\/stash@\{0\} \(\w+\)$/
           ok {`git stash list`} =~ partial_regexp(<<~"END")
             stash@{0}: WIP on main: {==\\h{7}==} add #{file1}
@@ -1508,7 +1508,7 @@ END
           file1 = dummy_stash1("file3562x.txt")
           file2 = dummy_stash2("file3562y.txt")
           output, sout = main "stash:list"
-          ok {unesc(sout)} == "[gi]$ git stash list\n"
+          ok {sout} == "[gi]$ git stash list\n"
           ok {output} =~ partial_regexp(<<~"END")
             stash@{0}: WIP on main: {==\\h{7}==} add #{file2}
             stash@{1}: WIP on main: {==\\h{7}==} add #{file1}
@@ -1524,13 +1524,13 @@ END
           ok {readfile(file2)} == "DDD\n"
           #
           output, sout = main "stash:pop"
-          ok {unesc(sout)} == "[gi]$ git stash pop\n"
+          ok {sout} == "[gi]$ git stash pop\n"
           ok {output} != ""
           ok {readfile(file1)} == "AAA\n"
           ok {readfile(file2)} == "DDD\nEEE\n"
           #
           output, sout = main "stash:pop"
-          ok {unesc(sout)} == "[gi]$ git stash pop\n"
+          ok {sout} == "[gi]$ git stash pop\n"
           ok {output} != ""
           ok {readfile(file1)} == "AAA\nBBB\n"
           ok {readfile(file2)} == "DDD\nEEE\n"
@@ -1546,7 +1546,7 @@ END
           ok {`git diff`} != ""
           ok {`git stash list`} == ""
           output, sout = main "stash:push"
-          ok {unesc(sout)} == "[gi]$ git stash push\n"
+          ok {sout} == "[gi]$ git stash push\n"
           ok {output} != ""
           ok {`git diff`} == ""
           ok {`git stash list`} =~ partial_regexp(<<~'END')
@@ -1571,17 +1571,17 @@ END
           END
           #
           output, sout = main "stash:show"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git stash show -p
           END
           ok {output} =~ expected_regexp
           #
           output, sout = main "stash:show", "-n", "1"
-          ok {unesc(sout)} == "[gi]$ git stash show -p \"stash@{0}\"\n"
+          ok {sout} == "[gi]$ git stash show -p \"stash@{0}\"\n"
           ok {output} =~ expected_regexp
           #
           output, sout = main "stash:show", "-n2"
-          ok {unesc(sout)} == "[gi]$ git stash show -p \"stash@{1}\"\n"
+          ok {sout} == "[gi]$ git stash show -p \"stash@{1}\"\n"
           ok {output} =~ partial_regexp(<<~'END')
             diff --git a/file9510x.txt b/file9510x.txt
             index {==\h{7}==}..{==\h{7}==} {==\d+==}
@@ -1617,7 +1617,7 @@ END
       topic 'status:compact' do
         spec "show status in compact format" do
           output, sout = main "status:compact"
-          ok {unesc(sout)} == "[gi]$ git status -sb\n"
+          ok {sout} == "[gi]$ git status -sb\n"
           ok {output} == <<~'END'
             ## main
              M file8040.txt
@@ -1629,7 +1629,7 @@ END
       topic 'status:default' do
         spec "show status in default format" do
           output, sout = main "status:default"
-          ok {unesc(sout)} == "[gi]$ git status\n"
+          ok {sout} == "[gi]$ git status\n"
           ok {output} == <<~'END'
 On branch main
 Changes not staged for commit:
@@ -1649,7 +1649,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
       topic 'status:here' do
         spec "same as 'stats:compact .'" do
           output, sout = main "status:here"
-          ok {unesc(sout)} == "[gi]$ git status -sb .\n"
+          ok {sout} == "[gi]$ git status -sb .\n"
           ok {output} == <<~'END'
             ## main
              M file8040.txt
@@ -1661,7 +1661,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
       topic 'status:info' do
         spec "show various infomation of current status" do
           output, sout = main "status:info"
-          ok {unesc(sout)} == <<~'END'
+          ok {sout} == <<~'END'
             [gi]$ git status -sb . | sed -n 's!/$!!;/^??/s/^?? //p' | xargs ls -dF --color
             [gi]$ git status -sb -uno .
           END
@@ -1683,7 +1683,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
           ## TODO
           dryrun_mode do
             _, sout = main "sync:both"
-            ok {unesc(sout)} == <<~"END"
+            ok {sout} == <<~"END"
               [gi]$ git pull --prune
               [gi]$ git push
             END
@@ -1696,7 +1696,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
           ## TODO
           dryrun_mode do
             _, sout = main "sync:download"
-            ok {unesc(sout)} == "[gi]$ git pull --prune\n"
+            ok {sout} == "[gi]$ git pull --prune\n"
           end
         end
       end
@@ -1706,7 +1706,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
           ## TODO
           dryrun_mode do
             _, sout = main "sync:upload"
-            ok {unesc(sout)} == "[gi]$ git push\n"
+            ok {sout} == "[gi]$ git push\n"
           end
         end
       end
@@ -1779,7 +1779,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
       #  spec "create a new tag" do
       #    tag = "tg6740"
       #    output, sout = main "tag:create", tag
-      #    ok {unesc(sout)} == "[gi]$ git tag #{tag}\n"
+      #    ok {sout} == "[gi]$ git tag #{tag}\n"
       #    ok {output} == ""
       #    ok {`git tag --list`} == <<~"END"
       #      #{tag}
@@ -1793,7 +1793,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
       #    system! "git tag #{tag}"
       #    ok {`git tag --list`}.include?(tag)
       #    output, sout = main "tag:delete", tag
-      #    ok {unesc(sout)} == "[gi]$ git tag -d tg6988\n"
+      #    ok {sout} == "[gi]$ git tag -d tg6988\n"
       #    ok {output} =~ /\ADeleted tag '#{tag}' \(was \h{7}\)\n\z/
       #    ok {`git tag --list`}.NOT.include?(tag)
       #  end
@@ -1806,7 +1806,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
       #    system! "git tag #{tag1}"
       #    system! "git tag #{tag2}"
       #    output, sout = main "tag:list"
-      #    ok {unesc(sout)} == "[gi]$ git tag -l\n"
+      #    ok {sout} == "[gi]$ git tag -l\n"
       #    ok {output} == <<~"END"
       #      #{tag1}
       #      #{tag2}
@@ -1820,7 +1820,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
           ## TODO
           dryrun_mode do
             _, sout = main "tag:download"
-            ok {unesc(sout)} == "[gi]$ git fetch --tags --prune-tags\n"
+            ok {sout} == "[gi]$ git fetch --tags --prune-tags\n"
           end
         end
       end
@@ -1830,7 +1830,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
           ## TODO
           dryrun_mode do
             _, sout = main "tag:upload"
-            ok {unesc(sout)} == "[gi]$ git push --tags\n"
+            ok {sout} == "[gi]$ git push --tags\n"
           end
         end
       end
