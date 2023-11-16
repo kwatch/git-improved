@@ -573,8 +573,8 @@ END
     define_alias("join"    , "branch:join")
     define_alias("merge"   , "branch:merge")
     define_alias("update"  , "branch:update")
-    define_alias("curr"    , "branch:current")
-    define_alias("prev"    , "branch:previous")
+   #define_alias("curr"    , "branch:current")
+   #define_alias("prev"    , "branch:previous")
 
 
     ##
@@ -848,7 +848,7 @@ END
     define_alias("correct" , "commit:correct")
     define_alias("fixup"   , "commit:fixup")
     define_alias("commits" , "commit:show")
-    define_alias("rollback", "commit:rollback")
+   #define_alias("rollback", "commit:rollback")
 
 
     ##
