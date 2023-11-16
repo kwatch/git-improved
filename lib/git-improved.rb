@@ -15,7 +15,7 @@ require 'benry/cmdapp'
 module GitImproved
 
   VERSION = "$Version: 0.0.0 $".split()[1]
-  ENVVAR_SETUP = "GI_SETUP"
+  ENVVAR_STARTUP = "GI_STARTUP"
 
 
   class GitConfig
@@ -1351,7 +1351,7 @@ END
         str = File.read(__FILE__, encoding: "utf-8")
         code = str.split(/^__END__\n/, 2)[1]
         code = code.gsub(/%SCRIPT%/, APP_CONFIG.app_command)
-        code = code.gsub(/%ENVVAR_SETUP%/, ENVVAR_SETUP)
+        code = code.gsub(/%ENVVAR_STARTUP%/, ENVVAR_STARTUP)
         #
         if ! filename || filename == "-"
           print code
@@ -1408,7 +1408,7 @@ END
 
 
   def self.main(argv=ARGV)
-    errmsg = _load_setup_file(ENV[ENVVAR_SETUP])
+    errmsg = _load_setup_file(ENV[ENVVAR_STARTUP])
     if errmsg
       $stderr.puts "\e[31m[ERROR]\e[0m #{errmsg}"
      return 1
@@ -1446,13 +1446,13 @@ __END__
 ##
 ## @(#) Setup file for '%SCRIPT%' command.
 ##
-## This file is loaded by '%SCRIPT%' command only if $%ENVVAR_SETUP% is set,
+## This file is loaded by '%SCRIPT%' command only if $%ENVVAR_STARTUP% is set,
 ## for example:
 ##
 ##     $ gi hello
 ##     [ERROR] hello: Action not found.
 ##
-##     $ export %ENVVAR_SETUP%="~/.gi_setup.rb"
+##     $ export %ENVVAR_STARTUP%="~/.gi_setup.rb"
 ##     $ gi hello
 ##     Hello, world!
 ##
