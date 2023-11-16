@@ -853,11 +853,11 @@ END
     ##
     category "history:" do
 
-      @action.("show commit history in various format")
+      @action.("show commit history in various format", important: true)
       @option.(:all, "-a, --all"   , "show history of all branches")
       @option.(:format, "-F, --format=<format>", "default/compact/detailed/graph",
                         enum: ["default", "compact", "detailed", "graph"])
-      @option.(:author, "-u, --author", "show author name before '@' of email address (only for graph format)")
+      @option.(:author, "-u, --author", "show author name before '@' of email address (only for 'graph' format)")
       def show(*path, all: false, format: "default", author: false)
         opts = all ? ["--all"] : []
         case format
@@ -963,8 +963,8 @@ END
 
     end
 
-    define_alias "hist"      , "history:graph"
-    define_alias "history"   , "history:default"
+    define_alias "hist"      , ["history:show", "-F", "graph"]
+    define_alias "history"   , "history:show"
     define_alias "histedit"  , "history:edit:start"
     #define_alias "histedit:resume", "history:edit:resume"
     #define_alias "histedit:skip"  , "history:edit:skip"
