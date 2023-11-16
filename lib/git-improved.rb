@@ -807,9 +807,11 @@ END
       @action.("create a new commit which reverts the target commit")
       @option.(:count, "-n <N>", "show latest N commits", type: Integer)
       @option.(:mainline, "-m <N>", "parent number (necessary to revert merge commit)")
-      def revert(*commit, count: nil, mainline: nil)
+      @option.(:reuse, "-M", "reuse commit message (not invoke text editor for it)")
+      def revert(*commit, count: nil, mainline: nil, reuse: false)
         commits = commit
-        opts = ["--no-edit"]
+        opts = []
+        opts << "--no-edit" if reuse
         opts << "-m" << mainline.to_s if mainline
         if count
           commits.length <= 1  or
