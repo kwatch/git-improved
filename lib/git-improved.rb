@@ -429,6 +429,7 @@ END
       def switch(branch=nil)
         branch = _resolve_except_prev_branch(branch)
         git "checkout", branch
+        #git "switch", branch
       end
 
       @action.("create a new branch, not switch to it")
@@ -684,7 +685,9 @@ END
       def restore(*path)
         if path.empty?
           git "reset", "--hard"
+          #git "checkout", "--", "."           # path required
         else
+          #git "reset", "--hard", "--", *path  #=> fatal: Cannot do hard reset with paths.
           git "checkout", "--", *path
         end
       end
@@ -873,7 +876,6 @@ END
         else
           raise "** assertion failed: format=#{format.inspect}"
         end
-        now = Time.now
         ## use 'git!' to ignore pipe error when pager process quitted
         git! "log", *opts, *path
       end
@@ -885,6 +887,7 @@ END
       def _show_hist(paths, all, opt)
         opts = [opt].flatten.compact()
         opts << "--all" if all
+        ## use 'git!' to ignore pipe error when pager process quitted
         git! "log", *opts, *paths
       end
 
