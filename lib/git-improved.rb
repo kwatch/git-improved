@@ -1138,7 +1138,7 @@ END
 
       @action.("download commits from remote and apply them to local")
       @option.(:apply, "-N, --not-apply", "just download, not apply", value: false)
-      def download(apply: false)
+      def download(apply: true)
         if apply
           git "pull", "--prune"
         else
