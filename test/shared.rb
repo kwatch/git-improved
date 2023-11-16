@@ -17,13 +17,18 @@ Oktest.global_scope do
 
 
   def main(*args, stdin: "")
+    sout, serr, status = main!(*args, stdin: stdin)
+    ok {serr} == ""
+    ok {status} == 0
+    return sout
+  end
+
+  def main!(*args, stdin: "")
     status = nil
     sout, serr = capture_sio(stdin, tty: true) do
       status = GitImproved.main(args)
     end
-    ok {serr} == ""
-    ok {status} == 0
-    return sout
+    return sout, serr, status
   end
 
   def capture_subprocess(&block)

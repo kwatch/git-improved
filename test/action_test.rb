@@ -1571,6 +1571,61 @@ END
         end
       end
 
+      topic 'repo:remote:origin' do
+        spec "get/set/delete origin (= default remote repository)" do
+          ## get (empty)
+          output = capture_subprocess() do
+            sout, serr, status = main! "repo:remote:origin"
+            ok {status} != 0
+            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+            ok {serr} == "\e[31m[ERROR]\e[0m Git command failed: git remote get-url origin\n"
+          end
+          ok {output} == "error: No such remote 'origin'\n"
+          ## set (add)
+          output = capture_subprocess() do
+            sout = main "repo:remote:origin", "github:user1/repo1"
+            ok {unesc(sout)} == <<~"END"
+              [gi]$ git remote add origin git@github.com:user1/repo1.git
+            END
+          end
+          ok {output} == ""
+          ## get
+          output = capture_subprocess() do
+            sout = main "repo:remote:origin"
+            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          end
+          ok {output} == "git@github.com:user1/repo1.git\n"
+          ## set
+          output = capture_subprocess() do
+            sout = main "repo:remote:origin", "gitlab:user2/repo2"
+            ok {unesc(sout)} == <<~"END"
+              [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
+            END
+          end
+          ok {output} == ""
+          ## get
+          output = capture_subprocess() do
+            sout = main "repo:remote:origin"
+            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          end
+          ok {output} == "git@gitlab.com:user2/repo2.git\n"
+          ## delete
+          output = capture_subprocess() do
+            sout = main "repo:remote:origin", ""
+            ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
+          end
+          ok {output} == ""
+          ## get (empty)
+          output = capture_subprocess() do
+            sout, serr, status = main! "repo:remote:origin"
+            ok {status} != 0
+            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+            ok {serr} == "\e[31m[ERROR]\e[0m Git command failed: git remote get-url origin\n"
+          end
+          ok {output} == "error: No such remote 'origin'\n"
+        end
+      end
+
       topic 'repo:remote:delete' do
         spec "delete remote repository" do
           system! "git remote add origin git@github.com/user1/repo1.git"

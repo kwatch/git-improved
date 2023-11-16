@@ -1068,6 +1068,11 @@ END
           end
         end
 
+        @action.("get/set/delete origin (= default remote repository)")
+        def origin(url=nil)
+          run_action "repo:remote", "origin", url
+        end
+
         @action.("list remote repositories")
         def list()
           git "remote", "--verbose"
