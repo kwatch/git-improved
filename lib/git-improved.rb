@@ -1087,18 +1087,18 @@ END
         end
       end
 
+      @action.("list tags", hidden: true)
+      @option.(:remote, "-r, --remote", "list remote tags")
+      def list(remote: false)
+        if remote
+          #git "show-ref", "--tags"
+          git "ls-remote", "--tags"
+        else
+          git "tag", "-l"
+        end
+      end
+
       ##--
-      #@action.("list tags", important: true)
-      #@option.(:remote, "-r, --remote", "list remote tags")
-      #def list(remote: false)
-      #  if remote
-      #    #git "show-ref", "--tags"
-      #    git "ls-remote", "--tags"
-      #  else
-      #    git "tag", "-l"
-      #  end
-      #end
-      #
       #@action.("create a new tag", important: true)
       #@option.(:on, "--on=<commit>", "commit-id where new tag created on")
       #def create(tag, on: nil)
@@ -1134,7 +1134,7 @@ END
 
     end
 
-    #define_alias("tags", "tag:list")
+    define_alias("tags", "tag:list")
 
 
     ##

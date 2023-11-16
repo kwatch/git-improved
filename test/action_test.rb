@@ -1723,22 +1723,22 @@ no changes added to commit (use "git add" and/or "git commit -a")
       #    ok {`git tag --list`}.NOT.include?(tag)
       #  end
       #end
-      #
-      #topic 'tag:list' do
-      #  spec "list tags" do
-      #    tag1 = "tg3352xx"
-      #    tag2 = "tg3352yy"
-      #    system! "git tag #{tag1}"
-      #    system! "git tag #{tag2}"
-      #    output, sout = main "tag:list"
-      #    ok {sout} == "[gi]$ git tag -l\n"
-      #    ok {output} == <<~"END"
-      #      #{tag1}
-      #      #{tag2}
-      #    END
-      #  end
-      #end
       ##++
+
+      topic 'tag:list' do
+        spec "list tags" do
+          tag1 = "tg3352xx"
+          tag2 = "tg3352yy"
+          system! "git tag #{tag1}"
+          system! "git tag #{tag2}"
+          output, sout = main "tag:list"
+          ok {sout} == "[gi]$ git tag -l\n"
+          ok {output} == <<~"END"
+            #{tag1}
+            #{tag2}
+          END
+        end
+      end
 
       topic 'tag:download' do
         spec "download tags" do
