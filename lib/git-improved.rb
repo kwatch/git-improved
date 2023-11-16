@@ -764,12 +764,10 @@ END
       end
 
       @action.("correct the last commit", important: true)
-      def correct()
-        if `git diff --cached`.empty?
-          git "commit", "--amend"
-        else
-          git "commit", "--amend", "--no-edit"
-        end
+      @option.(:reuse, "-M", "reuse commit message (not invoke editor for it)")
+      def correct(reuse: false)
+        opts = reuse ? ["--no-edit"] : []
+        git "commit", "--amend", *opts
       end
 
       @action.("correct the previous commit")
