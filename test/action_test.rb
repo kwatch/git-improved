@@ -1175,7 +1175,7 @@ END
                 [gi]$ git commit --allow-empty -m "Initial commit (empty)"
                 [gi]$ echo '*~'           >  .gitignore
                 [gi]$ echo '*.DS_Store'   >> .gitignore
-                [gi]$ echo 'tmp/*'        >> .gitignore
+                [gi]$ echo 'tmp'          >> .gitignore
                 [gi]$ echo '*.pyc'        >> .gitignore
                 [gi]$ cd -
               END
@@ -1199,7 +1199,7 @@ END
             [gi]$ git commit --allow-empty -m "Initial commit (empty)"
             [gi]$ echo '*~'           >  .gitignore
             [gi]$ echo '*.DS_Store'   >> .gitignore
-            [gi]$ echo 'tmp/*'        >> .gitignore
+            [gi]$ echo 'tmp'          >> .gitignore
             [gi]$ echo '*.pyc'        >> .gitignore
             [gi]$ cd -
           END
@@ -1222,7 +1222,7 @@ END
               [gi]$ git commit --allow-empty -m "Initial commit (empty)"
               [gi]$ echo '*~'           >  .gitignore
               [gi]$ echo '*.DS_Store'   >> .gitignore
-              [gi]$ echo 'tmp/*'        >> .gitignore
+              [gi]$ echo 'tmp'          >> .gitignore
               [gi]$ echo '*.pyc'        >> .gitignore
             END
             ok {".git"}.dir_exist?

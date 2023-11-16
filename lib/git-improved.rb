@@ -62,7 +62,7 @@ module GitImproved
     c.default_action          = "status:here"   # or: "status:info"
     c.initial_branch          = "main"   # != 'master'
     c.initial_commit_message  = "Initial commit (empty)"
-    c.gitignore_items         = ["*~", "*.DS_Store", "tmp/*", "*.pyc"]
+    c.gitignore_items         = ["*~", "*.DS_Store", "tmp", "*.pyc"]
     c.history_graph_format    = "%C(auto)%h %ad <%al> | %d %s"
    #c.history_graph_format    = "\e[32m%h %ad\e[0m <%al> \e[2m|\e[0m\e[33m%d\e[0m %s"
     c.history_graph_options   = ["--graph", "--date=short", "--decorate"]
