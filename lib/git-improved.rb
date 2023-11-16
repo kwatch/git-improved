@@ -1342,12 +1342,12 @@ END
     ##
     category "misc:" do
 
-      @action.("generate a setup file, or print to stdout if no args",
+      @action.("generate a startup file, or print to stdout if no args",
                usage: [
                  "<filename>     # generate a file",
                  "               # print to stdout",
                ])
-      def setupfile(filename=nil)
+      def startupfile(filename=nil)
         str = File.read(__FILE__, encoding: "utf-8")
         code = str.split(/^__END__\n/, 2)[1]
         code = code.gsub(/%SCRIPT%/, APP_CONFIG.app_command)

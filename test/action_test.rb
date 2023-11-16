@@ -1206,12 +1206,12 @@ END
 
     topic('misc:') {
 
-      topic 'misc:setupfile' do
+      topic 'misc:startupfile' do
         spec "generate a setup file" do
           file = "file1533.rb"
           at_end { rm_rf file }
           ok {file}.not_exist?
-          _, sout = main "misc:setupfile", file
+          _, sout = main "misc:startupfile", file
           ok {sout} == "[OK] file1533.rb generated.\n"
           ok {file}.file_exist?
           ok {readfile(file)} =~ /def hello\(name="world", lang: "en"\)/
@@ -1219,7 +1219,7 @@ END
         end
         spec "print to stdout if no args" do
           [[], ["-"]].each do |args|
-            _, sout = main "misc:setupfile", *args
+            _, sout = main "misc:startupfile", *args
             ok {sout} =~ /def hello\(name="world", lang: "en"\)/
             file = dummy_file(nil, sout)
             ok {`ruby -wc #{file}`} == "Syntax OK\n"
