@@ -879,44 +879,46 @@ END
         git! "log", *opts, *path
       end
 
-      histopt = optionset {
-        @option.(:all, "-a, --all"   , "show history of all branches")
-      }
-
-      def _show_hist(paths, all, opt)
-        opts = [opt].flatten.compact()
-        opts << "--all" if all
-        ## use 'git!' to ignore pipe error when pager process quitted
-        git! "log", *opts, *paths
-      end
-
-      @action.("show commit history in default format")
-      @optionset.(histopt)
-      def default(*path, all: false)
-        _show_hist(path, all, nil)
-      end
-
-      @action.("show history in compact format")
-      @optionset.(histopt)
-      def compact(*path, all: false)
-        _show_hist(path, all, "--oneline")
-      end
-
-      @action.("show commit history in detailed format")
-      @optionset.(histopt)
-      def detailed(*path, all: false)
-        _show_hist(path, all, "--format=fuller")
-      end
-
-      @action.("show commit history with branch graph", important: true)
-      @optionset.(histopt)
-      @option.(:author, "-u, --author", "show author name before '@' of email address")
-      def graph(*path, all: false, author: false)
-        fmt = GIT_CONFIG.history_graph_format
-        fmt = fmt.sub(/ ?<?%a[eEnNlL]>? ?/, ' ') unless author
-        opts = ["--format=#{fmt}"] + GIT_CONFIG.history_graph_options
-        _show_hist(path, all, opts)
-      end
+      ##--
+      #histopt = optionset {
+      #  @option.(:all, "-a, --all"   , "show history of all branches")
+      #}
+      #
+      #def _show_hist(paths, all, opt)
+      #  opts = [opt].flatten.compact()
+      #  opts << "--all" if all
+      #  ## use 'git!' to ignore pipe error when pager process quitted
+      #  git! "log", *opts, *paths
+      #end
+      #
+      #@action.("show commit history in default format")
+      #@optionset.(histopt)
+      #def default(*path, all: false)
+      #  _show_hist(path, all, nil)
+      #end
+      #
+      #@action.("show history in compact format")
+      #@optionset.(histopt)
+      #def compact(*path, all: false)
+      #  _show_hist(path, all, "--oneline")
+      #end
+      #
+      #@action.("show commit history in detailed format")
+      #@optionset.(histopt)
+      #def detailed(*path, all: false)
+      #  _show_hist(path, all, "--format=fuller")
+      #end
+      #
+      #@action.("show commit history with branch graph", important: true)
+      #@optionset.(histopt)
+      #@option.(:author, "-u, --author", "show author name before '@' of email address")
+      #def graph(*path, all: false, author: false)
+      #  fmt = GIT_CONFIG.history_graph_format
+      #  fmt = fmt.sub(/ ?<?%a[eEnNlL]>? ?/, ' ') unless author
+      #  opts = ["--format=#{fmt}"] + GIT_CONFIG.history_graph_options
+      #  _show_hist(path, all, opts)
+      #end
+      ##++
 
       @action.("show commits not uploaded yet")
       def notuploaded()

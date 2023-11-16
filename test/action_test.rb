@@ -987,157 +987,6 @@ END
         return file1, file2
       end
 
-      topic 'history:compact' do
-        before do
-          _reset_all_commits()
-        end
-        spec "show history in compact format" do
-          file1, file2 = _prepare("file5624")
-          output, sout = main "history:compact"
-          ok {sout} == "[gi]$ git log --oneline\n"
-          ok {output} =~ partial_regexp(<<~"END")
-            {==\\h{7}==} add #{file2}
-            {==\\h{7}==} add #{file1}
-            {==\\h{7}==} Initial commit (empty)
-          END
-        end
-      end
-
-      topic 'history:default' do
-        before do
-          _reset_all_commits()
-        end
-        spec "show commit history in default format" do
-          file1, file2 = _prepare("file8460")
-          output, sout = main "history:default"
-          ok {sout} == "[gi]$ git log\n"
-          ok {output} =~ partial_regexp(<<~"END")
-            commit {==\\h{40}==}
-            Author: user1 <user1@gmail.com>
-            Date:   {==.*==}
-            
-                add #{file2}
-            
-            commit {==\\h{40}==}
-            Author: user1 <user1@gmail.com>
-            Date:   {==.*==}
-            
-                add #{file1}
-            
-            commit {==\\h{40}==}
-            Author: user1 <user1@gmail.com>
-            Date:   {==.*==}
-            
-                Initial commit (empty)
-          END
-        end
-      end
-
-      topic 'history:detailed' do
-        before do
-          _reset_all_commits()
-        end
-        spec "show commit history in detailed format" do
-          file1, file2 = _prepare("file0632")
-          output, sout = main "history:detailed"
-          ok {sout} == "[gi]$ git log --format=fuller\n"
-          ok {output} =~ partial_regexp(<<~"END")
-            commit {==\\h{40}==}
-            Author:     user1 <user1@gmail.com>
-            AuthorDate: {==.*==}
-            Commit:     user1 <user1@gmail.com>
-            CommitDate: {==.*==}
-            
-                add #{file2}
-            
-            commit {==\\h{40}==}
-            Author:     user1 <user1@gmail.com>
-            AuthorDate: {==.*==}
-            Commit:     user1 <user1@gmail.com>
-            CommitDate: {==.*==}
-            
-                add #{file1}
-            
-            commit {==\\h{40}==}
-            Author:     user1 <user1@gmail.com>
-            AuthorDate: {==.*==}
-            Commit:     user1 <user1@gmail.com>
-            CommitDate: {==.*==}
-            
-                Initial commit (empty)
-          END
-        end
-      end
-
-      topic 'history:edit:cancel' do
-        spec "cancel (or abort) `git rebase -i`" do
-          ## TODO
-          dryrun_mode do
-            _, sout = main "history:edit:cancel"
-            ok {sout} == "[gi]$ git rebase --abort\n"
-          end
-        end
-      end
-
-      topic 'history:edit:resume' do
-        spec "resume (= conitnue) suspended `git rebase -i`" do
-          ## TODO
-          dryrun_mode do
-            _, sout = main "history:edit:resume"
-            ok {sout} == "[gi]$ git rebase --continue\n"
-          end
-        end
-      end
-
-      topic 'history:edit:skip' do
-        spec "skip current commit and resume" do
-          ## TODO
-          dryrun_mode do
-            _, sout = main "history:edit:skip"
-            ok {sout} == "[gi]$ git rebase --skip\n"
-          end
-        end
-      end
-
-      topic 'history:edit:start' do
-        spec "start `git rebase -i` to edit commit history", tag: "curr" do
-          ## TODO
-          dryrun_mode do
-            _, sout = main "history:edit:start", "-n2"
-            ok {sout} == "[gi]$ git rebase -i --autosquash \"HEAD~2\"\n"
-          end
-        end
-      end
-
-      topic 'history:graph' do
-        before do
-          _reset_all_commits()
-        end
-        spec "show commit history with branch graph", tag: "curr" do
-          file1, file2 = _prepare("file6071")
-          output, sout = main "history:graph"
-          ok {sout} == <<~"END"
-            [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
-          END
-          today = Time.now.strftime("%Y-%m-%d")
-          ok {output} =~ partial_regexp(<<~"END")
-            * {==\\h{7}==} #{today} |  (HEAD -> main) add #{file2}
-            * {==\\h{7}==} #{today} |  add #{file1}
-            * {==\\h{7}==} #{today} |  {==(?:\(.*?\) )?==}Initial commit (empty)
-          END
-        end
-      end
-
-      topic 'history:notuploaded' do
-        spec "show commits not uploaded yet" do
-          ## TODO
-          dryrun_mode do
-            _, sout = main "history:notuploaded"
-            ok {sout} == "[gi]$ git cherry -v\n"
-          end
-        end
-      end
-
       topic 'history:show' do
         before do
           _reset_all_commits()
@@ -1213,6 +1062,160 @@ END
             * {==\\h{7}==} #{today} |  add #{file1}
             * {==\\h{7}==} #{today} |  {==(?:\(.*?\) )?==}Initial commit (empty)
           END
+        end
+      end
+
+      ##--
+      #topic 'history:compact' do
+      #  before do
+      #    _reset_all_commits()
+      #  end
+      #  spec "show history in compact format" do
+      #    file1, file2 = _prepare("file5624")
+      #    output, sout = main "history:compact"
+      #    ok {sout} == "[gi]$ git log --oneline\n"
+      #    ok {output} =~ partial_regexp(<<~"END")
+      #      {==\\h{7}==} add #{file2}
+      #      {==\\h{7}==} add #{file1}
+      #      {==\\h{7}==} Initial commit (empty)
+      #    END
+      #  end
+      #end
+      #
+      #topic 'history:default' do
+      #  before do
+      #    _reset_all_commits()
+      #  end
+      #  spec "show commit history in default format" do
+      #    file1, file2 = _prepare("file8460")
+      #    output, sout = main "history:default"
+      #    ok {sout} == "[gi]$ git log\n"
+      #    ok {output} =~ partial_regexp(<<~"END")
+      #      commit {==\\h{40}==}
+      #      Author: user1 <user1@gmail.com>
+      #      Date:   {==.*==}
+      #      
+      #          add #{file2}
+      #      
+      #      commit {==\\h{40}==}
+      #      Author: user1 <user1@gmail.com>
+      #      Date:   {==.*==}
+      #      
+      #          add #{file1}
+      #      
+      #      commit {==\\h{40}==}
+      #      Author: user1 <user1@gmail.com>
+      #      Date:   {==.*==}
+      #      
+      #          Initial commit (empty)
+      #    END
+      #  end
+      #end
+      #
+      #topic 'history:detailed' do
+      #  before do
+      #    _reset_all_commits()
+      #  end
+      #  spec "show commit history in detailed format" do
+      #    file1, file2 = _prepare("file0632")
+      #    output, sout = main "history:detailed"
+      #    ok {sout} == "[gi]$ git log --format=fuller\n"
+      #    ok {output} =~ partial_regexp(<<~"END")
+      #      commit {==\\h{40}==}
+      #      Author:     user1 <user1@gmail.com>
+      #      AuthorDate: {==.*==}
+      #      Commit:     user1 <user1@gmail.com>
+      #      CommitDate: {==.*==}
+      #      
+      #          add #{file2}
+      #      
+      #      commit {==\\h{40}==}
+      #      Author:     user1 <user1@gmail.com>
+      #      AuthorDate: {==.*==}
+      #      Commit:     user1 <user1@gmail.com>
+      #      CommitDate: {==.*==}
+      #      
+      #          add #{file1}
+      #      
+      #      commit {==\\h{40}==}
+      #      Author:     user1 <user1@gmail.com>
+      #      AuthorDate: {==.*==}
+      #      Commit:     user1 <user1@gmail.com>
+      #      CommitDate: {==.*==}
+      #      
+      #          Initial commit (empty)
+      #    END
+      #  end
+      #end
+      #
+      #topic 'history:graph' do
+      #  before do
+      #    _reset_all_commits()
+      #  end
+      #  spec "show commit history with branch graph", tag: "curr" do
+      #    file1, file2 = _prepare("file6071")
+      #    output, sout = main "history:graph"
+      #    ok {sout} == <<~"END"
+      #      [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
+      #    END
+      #    today = Time.now.strftime("%Y-%m-%d")
+      #    ok {output} =~ partial_regexp(<<~"END")
+      #      * {==\\h{7}==} #{today} |  (HEAD -> main) add #{file2}
+      #      * {==\\h{7}==} #{today} |  add #{file1}
+      #      * {==\\h{7}==} #{today} |  {==(?:\(.*?\) )?==}Initial commit (empty)
+      #    END
+      #  end
+      #end
+      #
+      ##++
+
+      topic 'history:edit:cancel' do
+        spec "cancel (or abort) `git rebase -i`" do
+          ## TODO
+          dryrun_mode do
+            _, sout = main "history:edit:cancel"
+            ok {sout} == "[gi]$ git rebase --abort\n"
+          end
+        end
+      end
+
+      topic 'history:edit:resume' do
+        spec "resume (= conitnue) suspended `git rebase -i`" do
+          ## TODO
+          dryrun_mode do
+            _, sout = main "history:edit:resume"
+            ok {sout} == "[gi]$ git rebase --continue\n"
+          end
+        end
+      end
+
+      topic 'history:edit:skip' do
+        spec "skip current commit and resume" do
+          ## TODO
+          dryrun_mode do
+            _, sout = main "history:edit:skip"
+            ok {sout} == "[gi]$ git rebase --skip\n"
+          end
+        end
+      end
+
+      topic 'history:edit:start' do
+        spec "start `git rebase -i` to edit commit history", tag: "curr" do
+          ## TODO
+          dryrun_mode do
+            _, sout = main "history:edit:start", "-n2"
+            ok {sout} == "[gi]$ git rebase -i --autosquash \"HEAD~2\"\n"
+          end
+        end
+      end
+
+      topic 'history:notuploaded' do
+        spec "show commits not uploaded yet" do
+          ## TODO
+          dryrun_mode do
+            _, sout = main "history:notuploaded"
+            ok {sout} == "[gi]$ git cherry -v\n"
+          end
         end
       end
 
