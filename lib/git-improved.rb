@@ -1105,12 +1105,12 @@ END
       end
 
       @action.("upload tags")
-      def upload(tag)
+      def upload()
         git "push", "--tags"
       end
 
       @action.("download tags")
-      def download(tag)
+      def download()
         git "fetch", "--tags", "--prune-tags"
       end
 
