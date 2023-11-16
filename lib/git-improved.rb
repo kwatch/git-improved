@@ -1073,35 +1073,6 @@ END
           run_action "repo:remote", "origin", url
         end
 
-        @action.("list remote repositories")
-        def list()
-          git "remote", "--verbose"
-        end
-
-        @action.("set remote repo url ('github:<user>/<proj>' available")
-        @option.(:name, "--name=<name>", "remote repository name (default: 'origin')")
-        def seturl(url, name: "origin")
-          url = _resolve_repository_url(url)
-          remote_names = `git remote`.strip().split()
-          if remote_names.include?(name)
-            git "remote", "set-url", name, url
-          else
-            git "remote", "add", name, url
-          end
-        end
-
-        @action.("delete remote repository")
-        def delete(name=nil)
-          if name == nil
-            name = "origin"
-            if $stdin.tty?
-              q = "Are you sure to delete remote repo '\e[1m#{name}\e[0m'?"
-              return unless _confirm(q)
-            end
-          end
-          git "remote", "rm", name
-        end
-
       end
 
     end

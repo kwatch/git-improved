@@ -1433,52 +1433,6 @@ END
         end
       end
 
-      topic 'repo:remote:delete' do
-        spec "delete remote repository" do
-          system! "git remote add origin git@github.com/user1/repo1.git"
-          ok {`git remote`} == "origin\n"
-          #
-          output, sout = main "repo:remote:delete", "origin"
-          ok {unesc(sout)} == "[gi]$ git remote rm origin\n"
-          ok {output} == ""
-          ok {`git remote`} == ""
-        end
-      end
-
-      topic 'repo:remote:list' do
-        spec "list remote repositories" do
-          at_end {
-            system! "git remote remove origin"
-            system! "git remote remove backup"
-          }
-          system! "git remote add origin https://github.com/user1/repo1.git"
-          system! "git remote add backup https://gitlab.com/user1/repo1.git"
-          output, sout = main "repo:remote:list"
-          ok {unesc(sout)} == "[gi]$ git remote --verbose\n"
-          ok {output} == <<~'END'
-            backup	https://gitlab.com/user1/repo1.git (fetch)
-            backup	https://gitlab.com/user1/repo1.git (push)
-            origin	https://github.com/user1/repo1.git (fetch)
-            origin	https://github.com/user1/repo1.git (push)
-          END
-        end
-      end
-
-      topic 'repo:remote:seturl' do
-        spec "set remote repo url ('github:<user>/<proj>' available)" do
-          ok {`git remote -v`} == ""
-          output, sout = main "repo:remote:seturl", "github:user3039/repo3039"
-          ok {unesc(sout)} == <<~'END'
-            [gi]$ git remote add origin git@github.com:user3039/repo3039.git
-          END
-          ok {output} == ""
-          ok {`git remote -v`} == <<~'END'
-            origin	git@github.com:user3039/repo3039.git (fetch)
-            origin	git@github.com:user3039/repo3039.git (push)
-          END
-        end
-      end
-
     }
 
 
