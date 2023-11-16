@@ -919,14 +919,14 @@ END
         @option.(:stash, "-s, --stash", "store current changes into stash temporarily")
         def start(commit=nil, count: nil, stash: false)
           if commit && count
-            raise action_failed("Commit-id and `-n` option are exclusive.")
+            raise action_error("Commit-id and `-n` option are exclusive.")
           elsif commit
             nil
             arg = "#{commit}^"
           elsif count
             arg = "HEAD~#{count}"
           else
-            raise action_failed("Commit-id or `-n` option required.")
+            raise action_error("Commit-id or `-n` option required.")
           end
           git "stash", "push" if stash
           git "rebase", "-i", "--autosquash", arg
