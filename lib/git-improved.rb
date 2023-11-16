@@ -1045,7 +1045,28 @@ END
       end
 
       ## repo:remote:
-      category "remote:" do
+      category "remote:", action: "handle" do
+
+        @action.("list/get/set/delete remote repository", usage: [
+                   "                   # list",
+                   "<name>             # get",
+                   "<name> <url>       # set",
+                   "<name> \"\"          # delete",
+                 ])
+        def handle(name=nil, url=nil)
+          url = _resolve_repository_url(url) if url
+          if name == nil
+            git "remote", "-v"
+          elsif url == nil
+            git "remote", "get-url", name
+          elsif url == ""
+            git "remote", "remove", name
+          elsif `git remote`.split().include?(name)
+            git "remote", "set-url", name, url
+          else
+            git "remote", "add", name, url
+          end
+        end
 
         @action.("list remote repositories")
         def list()

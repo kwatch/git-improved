@@ -1517,6 +1517,60 @@ END
         end
       end
 
+      topic 'repo:remote' do
+        spec "list/get/set/delete remote repository" do
+          ## list (empty)
+          output = capture_subprocess() do
+            sout = main "repo:remote"
+            ok {unesc(sout)} == "[gi]$ git remote -v\n"
+          end
+          ok {output} == ""
+          ## set (add)
+          output = capture_subprocess() do
+            sout = main "repo:remote", "origin", "github:user1/repo1"
+            ok {unesc(sout)} == <<~"END"
+              [gi]$ git remote add origin git@github.com:user1/repo1.git
+            END
+          end
+          ok {output} == ""
+          ## get
+          output = capture_subprocess() do
+            sout = main "repo:remote", "origin"
+            ok {unesc(sout)} == "[gi]$ git remote get-url origin\n"
+          end
+          ok {output} == "git@github.com:user1/repo1.git\n"
+          ## set
+          output = capture_subprocess() do
+            sout = main "repo:remote", "origin", "gitlab:user2/repo2"
+            ok {unesc(sout)} == <<~"END"
+              [gi]$ git remote set-url origin git@gitlab.com:user2/repo2.git
+            END
+          end
+          ok {output} == ""
+          ## list
+          output = capture_subprocess() do
+            sout = main "repo:remote"
+            ok {unesc(sout)} == "[gi]$ git remote -v\n"
+          end
+          ok {output} == <<~"END"
+            origin	git@gitlab.com:user2/repo2.git (fetch)
+            origin	git@gitlab.com:user2/repo2.git (push)
+          END
+          ## delete
+          output = capture_subprocess() do
+            sout = main "repo:remote", "origin", ""
+            ok {unesc(sout)} == "[gi]$ git remote remove origin\n"
+          end
+          ok {output} == ""
+          ## list (empty)
+          output = capture_subprocess() do
+            sout = main "repo:remote"
+            ok {unesc(sout)} == "[gi]$ git remote -v\n"
+          end
+          ok {output} == ""
+        end
+      end
+
       topic 'repo:remote:delete' do
         spec "delete remote repository" do
           system! "git remote add origin git@github.com/user1/repo1.git"
