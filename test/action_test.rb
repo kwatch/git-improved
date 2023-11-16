@@ -932,7 +932,7 @@ Oktest.scope do
   $ gi stage .                  # add changes into staging area
   $ gi staged                   # show changes in staging area
   $ gi cc "update README file"  # commit changes
-  $ gi repo:remote:seturl github:yourname/mysample
+  $ gi repo:remote:origin github:yourname/mysample
   $ gi up                       # upload local commits to remote repo
 
 \e[1;34mDocument:\e[0m

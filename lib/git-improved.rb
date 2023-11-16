@@ -88,7 +88,7 @@ module GitImproved
   $ gi stage .                  # add changes into staging area
   $ gi staged                   # show changes in staging area
   $ gi cc "update README file"  # commit changes
-  $ gi repo:remote:seturl github:yourname/mysample
+  $ gi repo:remote:origin github:yourname/mysample
   $ gi up                       # upload local commits to remote repo
 END
       "Document:" => "  https://kwatch.github.io/git-improved/",
