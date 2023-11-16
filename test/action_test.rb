@@ -678,53 +678,6 @@ Oktest.scope do
         end
       end
 
-      topic 'config:delete' do
-        spec "delete config item" do
-          at_end { system! "git config user.email user1@gmail.com" }
-          ok {`git config --local --list`} =~ /^user\.email=/
-          output, sout = main "config:delete", "user.email"
-          ok {unesc(sout)}.start_with?(<<~'END')
-            [gi]$ git config --unset user.email
-          END
-          ok {output} == ""
-          ok {`git config --local --get user.email`} == ""
-          ok {`git config --local --list`} !~ /^user\.email=/
-        end
-      end
-
-      topic 'config:get' do
-        spec "show config value" do
-          output, sout = main "config:get", "user.email"
-          ok {unesc(sout)}.start_with?(<<~'END')
-            [gi]$ git config user.email
-          END
-          ok {output} == "user1@gmail.com\n"
-        end
-      end
-
-      topic 'config:list' do
-        spec "list config items" do
-          output, sout = main "config:list"
-          ok {unesc(sout)}.start_with?(<<~'END')
-            [gi]$ git config --list
-          END
-          lines = output.each_line.to_a()
-          ok {lines}.all? {|line| line =~ /^\S+=.*/ }
-        end
-      end
-
-      topic 'config:set' do
-        spec "set config value" do
-          at_end { system! "git config user.name user1" }
-          output, sout = main "config:set", "user.name", "user5"
-          ok {unesc(sout)}.start_with?(<<~'END')
-            [gi]$ git config user.name user5
-          END
-          ok {output} == ""
-          ok {`git config --get user.name`} == "user5\n"
-        end
-      end
-
       topic 'config:setuser' do
         spec "set user name and email" do
           at_end {

@@ -1257,28 +1257,6 @@ END
         end
       end
 
-      @action.("list config items")
-      @optionset.(optset)
-      def list(global: false, local: false)
-        opts = _build_config_options(global, local)
-        git "config", *opts, "--list"
-      end
-
-      @action.("show config value")
-      @optionset.(optset)
-      def get(key, global: false, local: false)
-        opts = _build_config_options(global, local)
-        #git "config", "--get", *opts, key
-        git "config", *opts, key
-      end
-
-      @action.("set config value")
-      @optionset.(optset)
-      def set(key, value, global: false, local: false)
-        opts = _build_config_options(global, local)
-        git "config", *opts, key, value
-      end
-
       @action.("set user name and email", usage: [
                   "<user> <u@email> # set user name and email",
                   "<user@email>     # set email (contains '@')",
@@ -1295,13 +1273,6 @@ END
         email = nil if email == '-'
         git "config", *opts, "user.name" , user   if user
         git "config", *opts, "user.email", email  if email
-      end
-
-      @action.("delete config item")
-      @optionset.(optset)
-      def delete(key, global: false, local: false)
-        opts = _build_config_options(global, local)
-        git "config", "--unset", *opts, key
       end
 
       @action.("list/get/set/delete aliases of 'git' (not of 'gi')", usage: [
