@@ -1387,7 +1387,7 @@ END
   end
 
 
-  def self.main()
+  def self.main(argv=ARGV)
     errmsg = _load_setup_file(ENV[ENVVAR_SETUP])
     if errmsg
       $stderr.puts "\e[31m[ERROR]\e[0m #{errmsg}"
@@ -1397,7 +1397,7 @@ END
     APP_CONFIG.default_action = GIT_CONFIG.default_action
     app_help_builder = AppHelpBuilder.new(APP_CONFIG)
     app = Benry::CmdApp::Application.new(APP_CONFIG, nil, app_help_builder)
-    return app.main()
+    return app.main(argv)
   end
 
   def self._load_setup_file(filename)
