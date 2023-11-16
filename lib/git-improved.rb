@@ -448,19 +448,21 @@ END
         git "checkout", "-b", branch, *args
       end
 
+      mergeopts = optionset {
+        @option.(:delete     , "-d, --delete", "delete the current branch after merged")
+        @option.(:fastforward, "    --ff", "use fast-forward merge")
+        @option.(:reuse      , "-M", "reuse commit message (not invoke text editor for it)")
+      }
+
       @action.("merge current branch into previous or other branch", important: true)
-      @option.(:delete     , "-d, --delete", "delete the current branch after merged")
-      @option.(:fastforward, "    --ff", "use fast-forward merge")
-      @option.(:reuse      , "-M", "reuse commit message (not invoke texteditor for it)")
+      @optionset.(mergeopts)
       def join(branch=nil, delete: false, fastforward: false, reuse: false)
         into_branch = _resolve_branch(branch || "PREV")
         __merge(_curr_branch(), into_branch, true, fastforward, delete, reuse)
       end
 
       @action.("merge previous or other branch into current branch")
-      @option.(:delete     , "-d, --delete", "delete the branch after merged")
-      @option.(:fastforward, "    --ff", "use fast-forward merge")
-      @option.(:reuse      , "-M", "reuse commit message (not invoke texteditor for it)")
+      @optionset.(mergeopts)
       def merge(branch=nil, delete: false, fastforward: false, reuse: false)
         merge_branch = _resolve_branch(branch || "PREV")
         __merge(merge_branch, _curr_branch(), false, fastforward, delete, reuse)
@@ -764,7 +766,7 @@ END
       end
 
       @action.("correct the last commit", important: true)
-      @option.(:reuse, "-M", "reuse commit message (not invoke editor for it)")
+      @option.(:reuse, "-M", "reuse commit message (not invoke text editor for it)")
       def correct(reuse: false)
         opts = reuse ? ["--no-edit"] : []
         git "commit", "--amend", *opts
