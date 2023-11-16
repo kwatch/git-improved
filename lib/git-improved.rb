@@ -451,23 +451,23 @@ END
       @action.("merge current branch into previous or other branch", important: true)
       @option.(:delete     , "-d, --delete", "delete the current branch after merged")
       @option.(:fastforward, "    --ff", "use fast-forward merge")
-      @option.(:editmsg    , "-M", "edit commit message")
-      def join(branch=nil, delete: false, fastforward: false, editmsg: false)
+      @option.(:reuse      , "-M", "reuse commit message (not invoke texteditor for it)")
+      def join(branch=nil, delete: false, fastforward: false, reuse: false)
         into_branch = _resolve_branch(branch || "PREV")
-        __merge(_curr_branch(), into_branch, true, fastforward, delete, editmsg)
+        __merge(_curr_branch(), into_branch, true, fastforward, delete, reuse)
       end
 
       @action.("merge previous or other branch into current branch")
       @option.(:delete     , "-d, --delete", "delete the branch after merged")
       @option.(:fastforward, "    --ff", "use fast-forward merge")
-      @option.(:editmsg    , "-M", "edit commit message")
-      def merge(branch=nil, delete: false, fastforward: false, editmsg: false)
+      @option.(:reuse      , "-M", "reuse commit message (not invoke texteditor for it)")
+      def merge(branch=nil, delete: false, fastforward: false, reuse: false)
         merge_branch = _resolve_branch(branch || "PREV")
-        __merge(merge_branch, _curr_branch(), false, fastforward, delete, editmsg)
+        __merge(merge_branch, _curr_branch(), false, fastforward, delete, reuse)
 
       end
 
-      def __merge(merge_branch, into_branch, switch, fastforward, delete, editmsg)
+      def __merge(merge_branch, into_branch, switch, fastforward, delete, reuse)
         b = proc {|s| "'\e[1m#{s}\e[0m'" }   # bold font
         #msg = "Merge #{b.(merge_branch)} branch into #{b.(into_branch)}?"
         msg = switch \
@@ -476,7 +476,7 @@ END
         if _confirm(msg + " OK?")
           _check_fastforward_merge_available(into_branch, merge_branch)
           opts = fastforward ? ["--ff-only"] : ["--no-ff"]
-          opts << "--no-edit" unless editmsg
+          opts << "--no-edit" if reuse
           git "checkout", into_branch if switch
           git "merge", *opts, (switch ? "-" : merge_branch)
           git "branch", "-d", merge_branch if delete
