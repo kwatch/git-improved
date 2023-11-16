@@ -34,7 +34,7 @@ Oktest.scope do
     end
 
 
-    topic 'branch:' do
+    topic('branch:') {
 
       topic 'branch:checkout' do
         spec "create a new local branch from a remote branch" do
@@ -319,10 +319,10 @@ Oktest.scope do
         end
       end
 
-    end
+    }
 
 
-    topic 'commit:' do
+    topic('commit:') {
 
       topic 'commit:apply' do
         before do
@@ -604,10 +604,10 @@ Oktest.scope do
         end
       end
 
-    end
+    }
 
 
-    topic 'config:' do
+    topic('config:') {
 
       topic 'config' do
         spec "list/get/set/delete config values" do
@@ -767,10 +767,10 @@ Oktest.scope do
         end
       end
 
-    end
+    }
 
 
-    topic 'file:' do
+    topic('file:') {
 
       topic 'file:changes' do
         before do
@@ -943,10 +943,10 @@ Oktest.scope do
         end
       end
 
-    end
+    }
 
 
-    topic 'help' do
+    topic('help') {
       spec "print help message (of action if specified)" do
         _, sout = main "help", tty: true
         ok {sout} == <<~"END"
@@ -1002,10 +1002,10 @@ END
   -l, --local         : handle repository local config
 END
       end
-    end
+    }
 
 
-    topic 'history:' do
+    topic('history:') {
 
       def _prepare(basefile)
         file1 = "#{basefile}.rb"
@@ -1248,10 +1248,10 @@ END
         end
       end
 
-    end
+    }
 
 
-    topic 'misc:' do
+    topic('misc:') {
 
       topic 'misc:setupfile' do
         spec "generate a setup file" do
@@ -1274,10 +1274,10 @@ END
         end
       end
 
-    end
+    }
 
 
-    topic 'repo:' do
+    topic('repo:') {
 
       topic 'repo:clone' do
         spec "copy a repository ('github:<user>/<repo>' is available)" do
@@ -1479,10 +1479,10 @@ END
         end
       end
 
-    end
+    }
 
 
-    topic 'staging:' do
+    topic('staging:') {
 
       topic 'staging:add' do
         before do
@@ -1552,10 +1552,10 @@ END
         end
       end
 
-    end
+    }
 
 
-    topic 'stash:' do
+    topic('stash:') {
 
       after do
         system! "git stash clear"
@@ -1687,10 +1687,10 @@ END
         end
       end
 
-    end
+    }
 
 
-    topic 'status:' do
+    topic('status:') {
 
       before do
         _reset_all_commits()
@@ -1766,10 +1766,10 @@ no changes added to commit (use "git add" and/or "git commit -a")
         end
       end
 
-    end
+    }
 
 
-    topic 'sync:' do
+    topic('sync:') {
 
       topic 'sync:both' do
         spec "download and upload commits" do
@@ -1804,10 +1804,10 @@ no changes added to commit (use "git add" and/or "git commit -a")
         end
       end
 
-    end
+    }
 
 
-    topic 'tag:' do
+    topic('tag:') {
 
       before do
         system! "git tag --list | xargs git tag --delete >/dev/null"
@@ -1872,7 +1872,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
         end
       end
 
-    end
+    }
 
 
   end
