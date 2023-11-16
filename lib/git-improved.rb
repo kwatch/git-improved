@@ -160,8 +160,18 @@ END
     end
 
     def cd(dir, &block)
-      _lazyload_unixcommand()
-      super
+      if $DRYRUN_MODE
+        echoback "cd #{dir}"
+        if File.directory?(dir)
+          Dir.chdir dir, &block
+        else
+          yield if block_given?()
+        end
+        echoback "cd -" if block_given?()
+      else
+        _lazyload_unixcommand()
+        super
+      end
     end
 
     def touch(*args)
