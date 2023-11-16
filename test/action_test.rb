@@ -60,11 +60,65 @@ Oktest.scope do
         end
       end
 
-      topic 'branch:current' do
-        spec "show current branch name" do
-          output, sout = main "branch:current"
+      topic 'branch:echo' do
+        spec "print branch name of CURR/PREV/PARENT branch" do
+          ## CURR
+          br = "br1129"
+          system! "git checkout -q -b #{br}"
+          output, sout = main "branch:echo", "CURR"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
+          ok {output} == "#{br}\n"
+          system! "git checkout -q main"
+          output, sout = main "branch:echo", "CURR"
           ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
           ok {output} == "main\n"
+          ## PREV
+          br = "br0183"
+          system! "git checkout -q -b #{br}"
+          output, sout = main "branch:echo", "PREV"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {output} == "main\n"
+          system! "git checkout -q -b #{br}xx"
+          output, sout = main "branch:echo", "PREV"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {output} == "#{br}\n"
+          ## PARENT
+          br = "br6488"
+          system! "git checkout -q main"
+          system! "git commit --allow-empty -q -m 'for #{br} #1'"
+          system! "git checkout -q -b #{br}"
+          system! "git commit --allow-empty -q -m 'for #{br} #2'"
+          ok {curr_branch()} == br
+          output, sout = main "branch:echo", "PARENT"
+          ok {sout} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            main
+          END
+          ok {output} == ""
+          #
+          system! "git checkout -q -b #{br}x"
+          ok {curr_branch()} == "#{br}x"
+          output, sout = main "branch:echo", "PARENT"
+          ok {sout} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            br6488
+          END
+          ok {output} == ""
+          ## other
+          output, sout = main "branch:echo", "HEAD"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
+          ok {output} == "br6488x\n"
+          output, sout, serr, status = main! "branch:echo", "current", tty: true
+          ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref current\n"
+          ok {serr} == <<~"END"
+            \e[31m[ERROR]\e[0m Git command failed: git rev-parse --abbrev-ref current
+          END
+          ok {output} == <<~'END'
+            fatal: ambiguous argument 'current': unknown revision or path not in the working tree.
+            Use '--' to separate paths from revisions, like this:
+            'git <command> [<revision>...] -- [<file>...]'
+            current
+          END
         end
       end
 
@@ -129,45 +183,6 @@ Oktest.scope do
           END
           ok {`git log -1 --oneline`} =~ /\A\h{7} Merge branch '#{br}'$/
           ok {`git log --oneline`} =~ /test commit on #{br}/
-        end
-      end
-
-      topic 'branch:parent' do
-        spec "show parent branch name (EXPERIMENTAL)" do
-          br = "br6488"
-          system! "git commit --allow-empty -q -m 'for #{br} #1'"
-          system! "git checkout -q -b #{br}"
-          system! "git commit --allow-empty -q -m 'for #{br} #2'"
-          ok {curr_branch()} == br
-          _, sout = main "branch:parent"
-          ok {sout} == <<~'END'
-            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
-            main
-          END
-          #
-          system! "git checkout -q -b #{br}x"
-          ok {curr_branch()} == "#{br}x"
-          _, sout = main "branch:parent"
-          ok {sout} == <<~'END'
-            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
-            br6488
-          END
-        end
-      end
-
-      topic 'branch:previous' do
-        spec "show previous branch name" do
-          br = "br0183"
-          #
-          system! "git checkout -q -b #{br}"
-          output, sout = main "branch:previous"
-          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
-          ok {output} == "main\n"
-          #
-          system! "git checkout -q -b #{br}xx"
-          output, sout = main "branch:previous"
-          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
-          ok {output} == "#{br}\n"
         end
       end
 

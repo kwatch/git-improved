@@ -357,7 +357,7 @@ END
         echoback command
         system! command
         git "status", "-sb", "-uno", path
-        #run_action "branch:current"
+        #run_action "branch:echo", "CURR"
       end
 
       status_optset = optionset {
@@ -397,32 +397,31 @@ END
         git "branch", opt
       end
 
-      @action.("show current branch name")
-      def current()
-        git "rev-parse", "--abbrev-ref", "HEAD"
-        #git "symbolic-ref", "--short", "HEAD"
-        #git "branch", "--show-current"
-      end
-
-      @action.("show previous branch name")
-      def previous()
-        #git "rev-parse", "--symbolic-full-name", "@{-1}"
-        git "rev-parse", "--abbrev-ref", "@{-1}"
-      end
-
-      @action.("show parent branch name (EXPERIMENTAL)")
-      def parent()
-        # ref: https://stackoverflow.com/questions/3161204/
-        command = <<~'END'
-          git show-branch -a \
-          | sed 's/].*//' \
-          | grep '\*' \
-          | grep -v "\\[$(git branch --show-current)\$" \
-          | head -n1 \
-          | sed 's/^.*\[//'
-        END
-        echoback(command.gsub(/\\\n/, '').strip())
-        puts _parent_branch()
+      @action.("print branch name of CURR/PREV/PARENT branch")
+      def echo(branch)
+        case branch
+        when "CURR"
+          git "rev-parse", "--abbrev-ref", "HEAD"
+          #git "symbolic-ref", "--short", "HEAD"
+          #git "branch", "--show-current"
+        when "PREV", "-"
+          #git "rev-parse", "--symbolic-full-name", "@{-1}"
+          git "rev-parse", "--abbrev-ref", "@{-1}"
+        when "PARENT"    # (EXPERIMENTAL)
+          # ref: https://stackoverflow.com/questions/3161204/
+          command = <<~'END'
+            git show-branch -a \
+            | sed 's/].*//' \
+            | grep '\*' \
+            | grep -v "\\[$(git branch --show-current)\$" \
+            | head -n1 \
+            | sed 's/^.*\[//'
+          END
+          echoback(command.gsub(/\\\n/, '').strip())
+          puts _parent_branch()
+        else
+          git "rev-parse", "--abbrev-ref", branch
+        end
       end
 
       @action.("switch to previous or other branch", important: true)
@@ -573,8 +572,6 @@ END
     define_alias("join"    , "branch:join")
     define_alias("merge"   , "branch:merge")
     define_alias("update"  , "branch:update")
-   #define_alias("curr"    , "branch:current")
-   #define_alias("prev"    , "branch:previous")
 
 
     ##
