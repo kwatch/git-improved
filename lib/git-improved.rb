@@ -1376,6 +1376,7 @@ END
     define_abbrev("r:r:", "repo:remote:")
     define_abbrev("h:"  , "history:")
     define_abbrev("h:e:", "history:edit:")
+    define_abbrev("histedit:", "history:edit:")
    #define_abbrev("t:"  , "tag:")
    #define_abbrev("s:"  , "status:")
    #define_abbrev("y:"  , "sync:")
