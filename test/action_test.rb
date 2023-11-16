@@ -991,18 +991,15 @@ END
         before do
           _reset_all_commits()
         end
-        spec "show commit history in various format" do
-          file1, file2 = _prepare("file2146")
-          ## compact
-          output, sout = main "history:show", "-F", "compact"
-          ok {sout} == "[gi]$ git log --oneline\n"
-          ok {output} =~ partial_regexp(<<~"END")
-            {==\\h{7}==} add #{file2}
-            {==\\h{7}==} add #{file1}
-            {==\\h{7}==} Initial commit (empty)
-          END
-          ## default
-          output, sout = main "history:show"
+        spec "shows commit history in default format." do
+          _test_default_format()
+        end
+        spec "option '-F default' shows commit history in default format." do
+          _test_default_format("-F", "default")
+        end
+        def _test_default_format(*opts)
+          file1, file2 = _prepare("file8460")
+          output, sout = main "history:show", *opts
           ok {sout} == "[gi]$ git log\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
@@ -1023,7 +1020,9 @@ END
             
                 Initial commit (empty)
           END
-          ## detailed
+        end
+        spec "option '-F detailed' shows commit history in detailed format." do
+          file1, file2 = _prepare("file0632")
           output, sout = main "history:show", "-F", "detailed"
           ok {sout} == "[gi]$ git log --format=fuller\n"
           ok {output} =~ partial_regexp(<<~"END")
@@ -1051,7 +1050,19 @@ END
             
                 Initial commit (empty)
           END
-          ## graph
+        end
+        spec "option '-F compact' shows history in compact format." do
+          file1, file2 = _prepare("file5624")
+          output, sout = main "history:show", "-F", "compact"
+          ok {sout} == "[gi]$ git log --oneline\n"
+          ok {output} =~ partial_regexp(<<~"END")
+            {==\\h{7}==} add #{file2}
+            {==\\h{7}==} add #{file1}
+            {==\\h{7}==} Initial commit (empty)
+          END
+        end
+        spec "option '-F graph' shows commit history with branch graph." do
+          file1, file2 = _prepare("file6071")
           output, sout = main "history:show", "-F", "graph"
           ok {sout} == <<~"END"
             [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
@@ -1064,110 +1075,6 @@ END
           END
         end
       end
-
-      ##--
-      #topic 'history:compact' do
-      #  before do
-      #    _reset_all_commits()
-      #  end
-      #  spec "show history in compact format" do
-      #    file1, file2 = _prepare("file5624")
-      #    output, sout = main "history:compact"
-      #    ok {sout} == "[gi]$ git log --oneline\n"
-      #    ok {output} =~ partial_regexp(<<~"END")
-      #      {==\\h{7}==} add #{file2}
-      #      {==\\h{7}==} add #{file1}
-      #      {==\\h{7}==} Initial commit (empty)
-      #    END
-      #  end
-      #end
-      #
-      #topic 'history:default' do
-      #  before do
-      #    _reset_all_commits()
-      #  end
-      #  spec "show commit history in default format" do
-      #    file1, file2 = _prepare("file8460")
-      #    output, sout = main "history:default"
-      #    ok {sout} == "[gi]$ git log\n"
-      #    ok {output} =~ partial_regexp(<<~"END")
-      #      commit {==\\h{40}==}
-      #      Author: user1 <user1@gmail.com>
-      #      Date:   {==.*==}
-      #      
-      #          add #{file2}
-      #      
-      #      commit {==\\h{40}==}
-      #      Author: user1 <user1@gmail.com>
-      #      Date:   {==.*==}
-      #      
-      #          add #{file1}
-      #      
-      #      commit {==\\h{40}==}
-      #      Author: user1 <user1@gmail.com>
-      #      Date:   {==.*==}
-      #      
-      #          Initial commit (empty)
-      #    END
-      #  end
-      #end
-      #
-      #topic 'history:detailed' do
-      #  before do
-      #    _reset_all_commits()
-      #  end
-      #  spec "show commit history in detailed format" do
-      #    file1, file2 = _prepare("file0632")
-      #    output, sout = main "history:detailed"
-      #    ok {sout} == "[gi]$ git log --format=fuller\n"
-      #    ok {output} =~ partial_regexp(<<~"END")
-      #      commit {==\\h{40}==}
-      #      Author:     user1 <user1@gmail.com>
-      #      AuthorDate: {==.*==}
-      #      Commit:     user1 <user1@gmail.com>
-      #      CommitDate: {==.*==}
-      #      
-      #          add #{file2}
-      #      
-      #      commit {==\\h{40}==}
-      #      Author:     user1 <user1@gmail.com>
-      #      AuthorDate: {==.*==}
-      #      Commit:     user1 <user1@gmail.com>
-      #      CommitDate: {==.*==}
-      #      
-      #          add #{file1}
-      #      
-      #      commit {==\\h{40}==}
-      #      Author:     user1 <user1@gmail.com>
-      #      AuthorDate: {==.*==}
-      #      Commit:     user1 <user1@gmail.com>
-      #      CommitDate: {==.*==}
-      #      
-      #          Initial commit (empty)
-      #    END
-      #  end
-      #end
-      #
-      #topic 'history:graph' do
-      #  before do
-      #    _reset_all_commits()
-      #  end
-      #  spec "show commit history with branch graph", tag: "curr" do
-      #    file1, file2 = _prepare("file6071")
-      #    output, sout = main "history:graph"
-      #    ok {sout} == <<~"END"
-      #      [gi]$ git log --format="%C(auto)%h %ad | %d %s" --graph --date=short --decorate
-      #    END
-      #    today = Time.now.strftime("%Y-%m-%d")
-      #    ok {output} =~ partial_regexp(<<~"END")
-      #      * {==\\h{7}==} #{today} |  (HEAD -> main) add #{file2}
-      #      * {==\\h{7}==} #{today} |  add #{file1}
-      #      * {==\\h{7}==} #{today} |  {==(?:\(.*?\) )?==}Initial commit (empty)
-      #    END
-      #  end
-      #end
-      #
-      ##++
 
       topic 'history:edit:cancel' do
         spec "cancel (or abort) `git rebase -i`" do
