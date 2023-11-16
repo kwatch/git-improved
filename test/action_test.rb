@@ -1774,29 +1774,46 @@ no changes added to commit (use "git add" and/or "git commit -a")
         end
       end
 
-      topic 'tag:create' do
-        spec "create a new tag" do
-          tag = "tg6740"
-          output, sout = main "tag:create", tag
-          ok {unesc(sout)} == "[gi]$ git tag #{tag}\n"
-          ok {output} == ""
-          ok {`git tag --list`} == <<~"END"
-            #{tag}
-          END
-        end
-      end
-
-      topic 'tag:delete' do
-        spec "delete a tag" do
-          tag = "tg6988"
-          system! "git tag #{tag}"
-          ok {`git tag --list`}.include?(tag)
-          output, sout = main "tag:delete", tag
-          ok {unesc(sout)} == "[gi]$ git tag -d tg6988\n"
-          ok {output} =~ /\ADeleted tag '#{tag}' \(was \h{7}\)\n\z/
-          ok {`git tag --list`}.NOT.include?(tag)
-        end
-      end
+      ##--
+      #topic 'tag:create' do
+      #  spec "create a new tag" do
+      #    tag = "tg6740"
+      #    output, sout = main "tag:create", tag
+      #    ok {unesc(sout)} == "[gi]$ git tag #{tag}\n"
+      #    ok {output} == ""
+      #    ok {`git tag --list`} == <<~"END"
+      #      #{tag}
+      #    END
+      #  end
+      #end
+      #
+      #topic 'tag:delete' do
+      #  spec "delete a tag" do
+      #    tag = "tg6988"
+      #    system! "git tag #{tag}"
+      #    ok {`git tag --list`}.include?(tag)
+      #    output, sout = main "tag:delete", tag
+      #    ok {unesc(sout)} == "[gi]$ git tag -d tg6988\n"
+      #    ok {output} =~ /\ADeleted tag '#{tag}' \(was \h{7}\)\n\z/
+      #    ok {`git tag --list`}.NOT.include?(tag)
+      #  end
+      #end
+      #
+      #topic 'tag:list' do
+      #  spec "list tags" do
+      #    tag1 = "tg3352xx"
+      #    tag2 = "tg3352yy"
+      #    system! "git tag #{tag1}"
+      #    system! "git tag #{tag2}"
+      #    output, sout = main "tag:list"
+      #    ok {unesc(sout)} == "[gi]$ git tag -l\n"
+      #    ok {output} == <<~"END"
+      #      #{tag1}
+      #      #{tag2}
+      #    END
+      #  end
+      #end
+      ##++
 
       topic 'tag:download' do
         spec "download tags" do
@@ -1805,21 +1822,6 @@ no changes added to commit (use "git add" and/or "git commit -a")
             _, sout = main "tag:download"
             ok {unesc(sout)} == "[gi]$ git fetch --tags --prune-tags\n"
           end
-        end
-      end
-
-      topic 'tag:list' do
-        spec "list tags" do
-          tag1 = "tg3352xx"
-          tag2 = "tg3352yy"
-          system! "git tag #{tag1}"
-          system! "git tag #{tag2}"
-          output, sout = main "tag:list"
-          ok {unesc(sout)} == "[gi]$ git tag -l\n"
-          ok {output} == <<~"END"
-            #{tag1}
-            #{tag2}
-          END
         end
       end
 

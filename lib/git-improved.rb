@@ -1118,38 +1118,40 @@ END
         end
       end
 
-      @action.("list tags", important: true)
-      @option.(:remote, "-r, --remote", "list remote tags")
-      def list(remote: false)
-        if remote
-          #git "show-ref", "--tags"
-          git "ls-remote", "--tags"
-        else
-          git "tag", "-l"
-        end
-      end
-
-      @action.("create a new tag", important: true)
-      @option.(:on, "--on=<commit>", "commit-id where new tag created on")
-      def create(tag, on: nil)
-        args = on ? [on] : []
-        git "tag", tag, *args
-      end
-
-      @action.("delete a tag")
-      @option.(:remote, "-r, --remote[=origin]", "delete from remote repository")
-      def delete(tag, *tag2, remote: nil)
-        tags = [tag] + tag2
-        if remote
-          remote = "origin" if remote == true
-          tags.each do |tag|
-            #git "push", "--delete", remote, tag     # may delete same name branch
-            git "push", remote, ":refs/tags/#{tag}"  # delete a tag safely
-          end
-        else
-          git "tag", "-d", *tags
-        end
-      end
+      ##--
+      #@action.("list tags", important: true)
+      #@option.(:remote, "-r, --remote", "list remote tags")
+      #def list(remote: false)
+      #  if remote
+      #    #git "show-ref", "--tags"
+      #    git "ls-remote", "--tags"
+      #  else
+      #    git "tag", "-l"
+      #  end
+      #end
+      #
+      #@action.("create a new tag", important: true)
+      #@option.(:on, "--on=<commit>", "commit-id where new tag created on")
+      #def create(tag, on: nil)
+      #  args = on ? [on] : []
+      #  git "tag", tag, *args
+      #end
+      #
+      #@action.("delete a tag")
+      #@option.(:remote, "-r, --remote[=origin]", "delete from remote repository")
+      #def delete(tag, *tag2, remote: nil)
+      #  tags = [tag] + tag2
+      #  if remote
+      #    remote = "origin" if remote == true
+      #    tags.each do |tag|
+      #      #git "push", "--delete", remote, tag     # may delete same name branch
+      #      git "push", remote, ":refs/tags/#{tag}"  # delete a tag safely
+      #    end
+      #  else
+      #    git "tag", "-d", *tags
+      #  end
+      #end
+      ##++
 
       @action.("upload tags")
       def upload()
@@ -1163,7 +1165,7 @@ END
 
     end
 
-    define_alias("tags", "tag:list")
+    #define_alias("tags", "tag:list")
 
 
     ##
