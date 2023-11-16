@@ -1081,7 +1081,42 @@ END
     ##
     ## tag:
     ##
-    category "tag:" do
+    category "tag:", action: "handle" do
+
+      @action.("list/show/create/delete tags", important: true, usage: [
+                 "                  # list",
+                 "<tag>             # show commit-id of the tag",
+                 "<tag> <commit>    # create a tag on the commit",
+                 "<tag> HEAD        # create a tag on current commit",
+                 "<tag> \"\"          # delete a tag",
+               ])
+      @option.(:remote, "-r, --remote[=origin]", "list/delete tags on remote (not for show/create)")
+      def handle(tag=nil, commit=nil, remote: nil)
+        if tag == nil               # list
+          if remote
+            #git "show-ref", "--tags"
+            git "ls-remote", "--tags"
+          else
+            git "tag", "-l"
+          end
+        elsif commit == nil         # show
+          ! remote  or
+            raise option_error("Option '-r' or '--remote' is not available for showing tag.")
+          git "rev-parse", tag
+        elsif commit == ""          # delete
+          if remote
+            remote = "origin" if remote == true
+            #git "push", "--delete", remote, tag     # may delete same name branch
+            git "push", remote, ":refs/tags/#{tag}"
+          else
+            git "tag", "--delete", tag
+          end
+        else                        # create
+          ! remote  or
+            raise option_error("Option '-r' or '--remote' is not available for creating tag.")
+          git "tag", tag, commit
+        end
+      end
 
       @action.("list tags", important: true)
       @option.(:remote, "-r, --remote", "list remote tags")

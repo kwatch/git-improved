@@ -1720,6 +1720,60 @@ no changes added to commit (use "git add" and/or "git commit -a")
         system! "git tag --list | xargs git tag --delete >/dev/null"
       end
 
+      topic 'tag:handle' do
+        spec "list/show/create/delete tags" do
+          tag = "tg3454"
+          ## create
+          output, sout = main "tag", tag, "HEAD"
+          ok {sout} == "[gi]$ git tag #{tag} HEAD\n"
+          ok {`git tag -l`}.include?(tag)
+          ## list
+          output, sout = main "tag"
+          ok {sout} == "[gi]$ git tag -l\n"
+          ok {output} == <<~'END'
+            tg3454
+          END
+          ## show
+          output, sout = main "tag", tag
+          ok {sout} == "[gi]$ git rev-parse #{tag}\n"
+          ok {output} =~ /\A\h{40}\n\z/
+          ## delete
+          output, sout = main "tag", tag, ""
+          ok {sout} == "[gi]$ git tag --delete #{tag}\n"
+          ok {output} =~ /\ADeleted tag '#{tag}'/
+          ok {`git tag -l`}.NOT.include?(tag)
+        end
+        spec "supports '-r, --remote' option." do
+          tag = "tg6023"
+          ## create
+          output, sout, serr, status = main! "tag", '-r', tag, "HEAD", tty: true
+          ok {status} != 0
+          ok {serr} == <<~"END"
+            \e[31m[ERROR]\e[0m Option '-r' or '--remote' is not available for creating tag.
+          END
+          ok {sout} == ""
+          ## list
+          dryrun_mode do
+            output, sout = main "tag", '-r'
+            ok {sout} == "[gi]$ git ls-remote --tags\n"
+            ok {output} == ""
+          end
+          ## show
+          output, sout, serr, status = main! "tag", '-r', tag, tty: true
+          ok {status} != 0
+          ok {serr} == <<~"END"
+            \e[31m[ERROR]\e[0m Option '-r' or '--remote' is not available for showing tag.
+          END
+          ok {sout} == ""
+          ## delete
+          dryrun_mode do
+            output, sout = main "tag", '-r', tag, ""
+            ok {sout} == "[gi]$ git push origin :refs/tags/#{tag}\n"
+            ok {output} == ""
+          end
+        end
+      end
+
       topic 'tag:create' do
         spec "create a new tag" do
           tag = "tg6740"
