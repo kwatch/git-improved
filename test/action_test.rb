@@ -1001,10 +1001,19 @@ END
   $ \e[1mgi config\e[0m [<options>] <key>           # get
   $ \e[1mgi config\e[0m [<options>] <key> <value>   # set
   $ \e[1mgi config\e[0m [<options>] <key> ""        # delete
+  $ \e[1mgi config\e[0m [<options>] <prefix>        # filter by prefix
 
 \e[1;34mOptions:\e[0m
   -g, --global        : handle global config
   -l, --local         : handle repository local config
+
+\e[1;34mExample:\e[0m
+  $ gi config                      # list
+  $ gi config core.editor          # get
+  $ gi config core.editor vim      # set
+  $ gi config core.editor ""       # delete
+  $ gi config core.                # filter by prefix
+  $ gi config .                    # list top level prefixes
 END
       end
     }
