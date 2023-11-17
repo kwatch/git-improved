@@ -128,7 +128,7 @@ Oktest.scope do
           system! "git branch #{br}"
           ok {`git branch`} =~ /#{br}/
           _, sout = main "branch:delete", br
-          ok {sout} == "[gi]$ git branch -D br6993\n"
+          ok {sout} == "[gi]$ git branch -d br6993\n"
           ok {`git branch`} !~ /#{br}/
         end
       end

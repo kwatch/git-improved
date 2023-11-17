@@ -530,7 +530,7 @@ END
           #git "push", *opts, remote, ":#{branch}"
           git "push", "--delete", *opts, remote, branch
         else
-          opts = force ? ["-d"] : ["-D"]
+          opts = force ? ["-D"] : ["-d"]
           git "branch", *opts, branch
         end
       end
