@@ -1429,6 +1429,7 @@ __END__
 
 module GitImproved
 
+
   ##
   ## Configuration example
   ##
@@ -1442,6 +1443,18 @@ module GitImproved
     ##c.history_graph_format    = "\e[32m%h %ad\e[0m <%al> \e[2m|\e[0m\e[33m%d\e[0m %s"
     #c.history_graph_options   = ["--graph", "--date=short", "--decorate"]
   end
+
+
+  ##
+  ## Custom alias example
+  ##
+  GitAction.class_eval do
+
+    ## `gi br <branch>` == `gi breanch:create -w <branch>`
+    define_alias "br", ["branch:create", "-w"]
+
+  end
+
 
   ##
   ## Custom action example
@@ -1469,5 +1482,6 @@ module GitImproved
     #define_alias "hello", "example:hello"
 
   end
+
 
 end
