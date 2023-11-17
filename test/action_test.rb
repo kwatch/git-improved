@@ -61,7 +61,7 @@ Oktest.scope do
       end
 
       topic 'branch:echo' do
-        spec "print branch name of CURR/PREV/PARENT branch" do
+        spec "print CURR/PREV/PARENT branch name" do
           ## CURR
           br = "br1129"
           system! "git checkout -q -b #{br}"
@@ -105,9 +105,10 @@ Oktest.scope do
           END
           ok {output} == ""
           ## other
+          system! "git checkout -q #{br}"
           output, sout = main "branch:echo", "HEAD"
           ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
-          ok {output} == "br6488x\n"
+          ok {output} == "br6488\n"
           output, sout, serr, status = main! "branch:echo", "current", tty: true
           ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref current\n"
           ok {serr} == <<~"END"
@@ -331,6 +332,26 @@ Oktest.scope do
             _, sout = main "branch:update"
             ok {sout} == "[gi]$ git pull\n"
           end
+        end
+      end
+
+      topic 'branch:upstream' do
+        spec "print upstream repo name of current branch" do
+          br = "br2950"
+          system! "git checkout -q -b #{br}"
+          output, sout = main "branch:upstream"
+          ok {sout} == <<~'END'
+            [gi]$ git config --get-regexp '^branch\.br2950\.remote' | awk '{print $2}'
+          END
+          ok {output} == ""
+          #system! "git remote add origin git@github.com:user1/repo1.git"
+          system! "git config branch.#{br}.remote origin"
+          output, sout = main "branch:upstream"
+          ok {sout} == <<~'END'
+            [gi]$ git config --get-regexp '^branch\.br2950\.remote' | awk '{print $2}'
+            origin
+          END
+          ok {output} == ""
         end
       end
 

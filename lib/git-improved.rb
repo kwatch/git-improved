@@ -397,7 +397,7 @@ END
         git "branch", opt
       end
 
-      @action.("print branch name of CURR/PREV/PARENT branch")
+      @action.("print CURR/PREV/PARENT branch name")
       def echo(branch)
         case branch
         when "CURR"
@@ -560,6 +560,15 @@ END
         git "stash", "push" if changed
         git "rebase", branch
         git "stash", "pop"  if changed
+      end
+
+      @action.("print upstream repo name of current branch")
+      def upstream()
+        #git! "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"
+        branch = _curr_branch()
+        echoback "git config --get-regexp '^branch\\.#{branch}\\.remote' | awk '{print $2}'"
+        output = `git config --get-regexp '^branch\\.#{branch}\\.remote'`
+        output.each_line {|line| puts line.split()[1] }
       end
 
     end
