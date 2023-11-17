@@ -12,6 +12,21 @@ require 'benry/cmdapp'
 #require 'benry/unixcommand'    # lazy load
 
 
+if (RUBY_VERSION.split('.').collect(&:to_i) <=> [2, 6]) < 0
+  Kernel.module_eval do
+    alias __orig_system system
+    def system(*args, **kws)
+      if kws.delete(:exception)
+        __orig_system(*args, **kws)  or
+          raise "Command failed: #{args.join(' ')}"
+      else
+        __orig_system(*args, **kws)
+      end
+    end
+  end
+end
+
+
 module GitImproved
 
   VERSION = "$Version: 0.0.0 $".split()[1]
