@@ -1603,11 +1603,13 @@ no changes added to commit (use "git add" and/or "git commit -a")
       topic 'sync:both' do
         spec "download and upload commits" do
           ## TODO
+          system! "git remote add origin git@github.com:u1/r1.git"
+          at_end { system! "git remote remove origin" }
           dryrun_mode do
-            _, sout = main "sync:both"
+            _, sout = main "sync:both", "-U"
             ok {sout} == <<~"END"
               [gi]$ git pull --prune
-              [gi]$ git push
+              [gi]$ git push -u origin main
             END
           end
         end

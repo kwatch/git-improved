@@ -1163,10 +1163,21 @@ END
     ##
     category "sync:" do
 
+      uploadopts = optionset {
+        @option.(:upstream, "-u <remote>"  , "set upstream")
+        @option.(:origin  , "-U"           , "same as '-u origin'")
+        @option.(:force   , "-f, --force"  , "upload forcedly")
+      }
+
+      @action.("download and upload commits")
+      @optionset.(uploadopts)
+      def both(upstream: nil, origin: false, force: false)
+        run_action "download"
+        run_action "upload", upstream: upstream, origin: origin, force: force
+      end
+
       @action.("upload commits")
-      @option.(:upstream, "-u <remote>"  , "set upstream")
-      @option.(:origin  , "-U"           , "same as '-u origin'")
-      @option.(:force   , "-f, --force"  , "upload forcedly")
+      @optionset.(uploadopts)
       def upload(upstream: nil, origin: false, force: false)
         branch = _curr_branch()
         upstream ||= "origin" if origin
@@ -1200,12 +1211,6 @@ END
         else
           git "fetch", "--prune"
         end
-      end
-
-      @action.("download and upload commits")
-      def both()
-        run_action "download"
-        run_action "upload"
       end
 
     end
