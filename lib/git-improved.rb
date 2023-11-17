@@ -1164,16 +1164,33 @@ END
     category "sync:" do
 
       @action.("upload commits")
-      @option.(:origin, "    --origin" , "set upstream to origin")
-      @option.(:force , "-f, --force"  , "upload forcedly")
-      def upload(origin: false, force: false)
-        opts = force ? ["-f"] : []
-        if origin
-          git "push", *opts, "-u", "origin", _curr_branch()
+      @option.(:upstream, "-u <remote>"  , "set upstream")
+      @option.(:origin  , "-U"           , "same as '-u origin'")
+      @option.(:force   , "-f, --force"  , "upload forcedly")
+      def upload(upstream: nil, origin: false, force: false)
+        branch = _curr_branch()
+        upstream ||= "origin" if origin
+        upstream ||= _ask_remote_repo(branch)
+        #
+        opts = []
+        opts << "-f" if force
+        if upstream
+          git "push", *opts, "-u", upstream, branch  # branch name is required
         else
           git "push", *opts
         end
       end
+
+      def _ask_remote_repo(branch)
+        output = `git config --get-regexp '^branch\.'`
+        has_upstream = output.each_line.any? {|line|
+          line =~ /\Abranch\.(.*)\.remote / && $1 == branch
+        }
+        return nil if has_upstream
+        remote = _ask_to_user "Enter the remote repo name (default: \e[1morigin\e[0m) :"
+        return remote && ! remote.empty? ? remote : "origin"
+      end
+      private :_ask_remote_repo
 
       @action.("download commits from remote and apply them to local")
       @option.(:apply, "-N, --not-apply", "just download, not apply", value: false)

@@ -1627,8 +1627,10 @@ no changes added to commit (use "git add" and/or "git commit -a")
         spec "upload commits" do
           ## TODO
           dryrun_mode do
-            _, sout = main "sync:upload"
-            ok {sout} == "[gi]$ git push\n"
+            _, sout = main "sync:upload", stdin: "\n"
+            ok {sout} == <<~"END"
+              Enter the remote repo name (default: \e[1morigin\e[0m) : [gi]$ git push -u origin main
+            END
           end
         end
       end
