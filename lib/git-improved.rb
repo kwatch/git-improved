@@ -1009,8 +1009,12 @@ END
       def clone(url, dir=nil, user: nil, email: nil)
         url = _resolve_repository_url(url)
         args = dir ? [dir] : []
+        files = Dir.glob("*")
         git "clone", url, *args
-        _config_user_and_email(user, email)
+        newdir = (Dir.glob("*") - files)[0] || dir
+        cd newdir do
+          _config_user_and_email(user, email)
+        end if newdir
       end
 
       ## repo:remote:

@@ -1165,20 +1165,17 @@ END
           Dir.mkdir dir
           Dir.chdir dir do
             dryrun_mode do
-              _, sout = main "repo:create", dir, "-u", "user1", "-e", "user1@gmail.com"
+              url = "github:user3/repo3"
+              args = ["-u", "user1", "-e", "user1@gmail.com"]
+              output, sout = main "repo:clone", url, *args, dir
               ok {sout} == <<~"END"
-                [gi]$ mkdir repo7594
-                [gi]$ cd repo7594
-                [gi]$ git init --initial-branch=main
+                [gi]$ git clone git@github.com:user3/repo3.git #{dir}
+                [gi]$ cd #{dir}
                 [gi]$ git config user.name user1
                 [gi]$ git config user.email user1@gmail.com
-                [gi]$ git commit --allow-empty -m "Initial commit (empty)"
-                [gi]$ echo '*~'           >  .gitignore
-                [gi]$ echo '*.DS_Store'   >> .gitignore
-                [gi]$ echo 'tmp'          >> .gitignore
-                [gi]$ echo '*.pyc'        >> .gitignore
                 [gi]$ cd -
               END
+              ok {output} == ""
             end
           end
         end
