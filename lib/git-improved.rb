@@ -238,12 +238,12 @@ END
       case url
       when /^github:/
         url =~ /^github:(?:\/\/)?([^\/]+)\/([^\/]+)$/  or
-          raise action_error("Invalid GitHub url: #{url}")
+          raise action_error("Invalid GitHub URL: #{url}")
         user = $1; project = $2
         return "git@github.com:#{user}/#{project}.git"
       when /^gitlab:/
         url =~ /^gitlab:(?:\/\/)?([^\/]+)\/([^\/]+)$/  or
-          raise action_error("Invalid GitLub url: #{url}")
+          raise action_error("Invalid GitLub URL: #{url}")
         user = $1; project = $2
         return "git@gitlab.com:#{user}/#{project}.git"
       else
