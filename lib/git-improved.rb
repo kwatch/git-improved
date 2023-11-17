@@ -1299,15 +1299,42 @@ END
                  "<key>           # get",
                  "<key> <value>   # set",
                  "<key> \"\"        # delete",
-               ])
+                 "<prefix>        # filter by prefix",
+               ], postamble: {
+                 "Example:" => (<<~END).gsub(/^/, "  "),
+                   $ gi config                      # list
+                   $ gi config core.editor          # get
+                   $ gi config core.editor vim      # set
+                   $ gi config core.editor ""       # delete
+                   $ gi config core.                # filter by prefix
+                   $ gi config .                    # list top level prefixes
+                 END
+               })
       @optionset.(optset)
       def handle(key=nil, value=nil, global: false, local: false)
         opts = _build_config_options(global, local)
         if key == nil                     # list
           git "config", *opts, "--list"
-        elsif value == nil                # get
-          #git "config", "--get", *opts, key
-          git "config", *opts, key
+        elsif value == nil                # get or filter
+          case key
+          when "."                          # list top level prefixes
+            echoback "gi config | awk -F. 'NR>1{d[$1]++}END{for(k in d){print(k\"\\t(\"d[k]\")\")}}' | sort"
+            d = {}
+            `git config -l #{opts.join(' ')}`.each_line do |line|
+              d[$1] = (d[$1] || 0) + 1 if line =~ /^(\w+\.)/
+            end
+            d.keys.sort.each {|k| puts "#{k}\t(#{d[k]})" }
+          when /\.$/                        # list (filter)
+            pat = "^"+key.gsub('.', '\\.')
+            #git "config", *opts, "--get-regexp", pat  # different with `config -l`
+            echoback "git config -l #{opts.join(' ')} | grep '#{pat}'"
+            `git config -l #{opts.join(' ')}`.each_line do |line|
+              print line if line.start_with?(key)
+            end
+          else                              # get
+            #git "config", "--get", *opts, key
+            git "config", *opts, key
+          end
         elsif value == ""                 # delete
           git "config", *opts, "--unset", key
         else                              # set

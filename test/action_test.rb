@@ -676,6 +676,22 @@ Oktest.scope do
           ok {output} == ""
           ok {`git config --local --get user.name`} == ""
         end
+        spec "filters by prefix if key is like 'foo.'." do
+          output, sout = main "config", "core."
+          ok {sout}.start_with?("[gi]$ git config -l  | grep '^core\\.'\n")
+          ok {sout} =~ /^core\.pager=/
+          ok {sout} =~ /^core\.editor=/
+          lines = sout.each_line.to_a()
+          lines.shift()
+          ok {lines}.all? {|line| line.start_with?("core.") }
+          ok {output} == ""
+        end
+        spec "lists top level prefixes if key is '.'." do
+          output, sout = main "config", "."
+          ok {sout}.start_with?("[gi]$ gi config | awk -F. 'NR>1{d[$1]++}END{for(k in d){print(k\"\\t(\"d[k]\")\")}}' | sort\n")
+          ok {sout} =~ /^core\.\t\(\d+\)/
+          ok {sout} =~ /^user\.\t\(\d+\)/
+        end
       end
 
       topic 'config:alias' do
