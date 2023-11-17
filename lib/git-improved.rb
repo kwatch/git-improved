@@ -1023,9 +1023,16 @@ END
         @action.("list/get/set/delete remote repository", usage: [
                    "                   # list",
                    "<name>             # get",
-                   "<name> <url>       # set",
+                   "<name> <url>       # set ('github:user/repo' is avaialble)",
                    "<name> \"\"          # delete",
-                 ])
+                 ], postamble: {
+                   "Example:" => <<~'END'.gsub(/^/, "  "),
+                     $ gi repo:remote                             # list
+                     $ gi repo:remote origin                      # get
+                     $ gi repo:remote origin github:user1/repo1   # set
+                     $ gi repo:remote origin ""                   # delete
+                   END
+                 })
         def handle(name=nil, url=nil)
           url = _resolve_repository_url(url) if url
           if name == nil
@@ -1041,7 +1048,17 @@ END
           end
         end
 
-        @action.("get/set/delete origin (= default remote repository)")
+        @action.("get/set/delete origin (= default remote repository)", usage: [
+                   "            # get",
+                   "<url>       # set ('github:user/repo' is avaialble)",
+                   "\"\"          # delete",
+                 ], postamble: {
+                   "Example:" => <<~'END'.gsub(/^/, "  "),
+                     $ gi repo:remote:origin                      # get
+                     $ gi repo:remote:origin github:user1/repo1   # set
+                     $ gi repo:remote:origin ""                   # delete
+                   END
+                 })
         def origin(url=nil)
           run_action "repo:remote", "origin", url
         end
