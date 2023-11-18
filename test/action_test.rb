@@ -326,11 +326,43 @@ Oktest.scope do
       end
 
       topic 'branch:update' do
+        def _prepare()
+          br = "br6209"
+          file = "file6209.txt"
+          #system! "git remote add origin git@github.com:u1/r1.git"
+          #system! "git config advice.setUpstreamFailure false"
+          #system! "git branch -u origin main"
+          #at_end { system! "git remote remove origin" }
+          system! "git config branch.main.remote origin"
+          at_end { system! "git config --unset branch.main.remote" }
+          system! "git checkout -q main"
+          system! "git checkout -q -b #{br}"
+          dummy_file(file, "A\n")
+          system! "git add #{file}"
+          system! "git commit -q -m 'add #{file} #1'"
+          system! "git checkout -q -b origin/main"
+          system! "git commit --allow-empty -q -m 'test #2'"
+          system! "git checkout -q main"
+          system! "git commit --allow-empty -q -m 'test #3'"
+          system! "git checkout -q #{br}"
+          writefile(file, "A\nB\n")
+        end
         spec "git pull && git stash && git rebase && git stash pop" do
           ## TODO
+          _prepare()
           dryrun_mode do
-            _, sout = main "branch:update"
-            ok {sout} == "[gi]$ git pull\n"
+            output, sout = main "branch:update", "-b"
+            ok {sout} == <<~"END"
+              [INFO] previous: main, remote: origin
+              [gi]$ git fetch
+              [gi]$ git stash push -q
+              [gi]$ git checkout -q main
+              [gi]$ git pull
+              [gi]$ git checkout -q -
+              [gi]$ git rebase main
+              [gi]$ git stash pop -q
+            END
+            ok {output} == ""
           end
         end
       end

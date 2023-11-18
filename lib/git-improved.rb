@@ -266,6 +266,19 @@ END
       end
     end
 
+    def _remote_repo(branch)
+      branch_ = Regexp.escape(branch)
+      output = `git config --get-regexp '^branch\\.#{branch_}\\.remote'`
+      arr = output.each_line.grep(/^branch\..*?\.remote (.*)/) { $1 }
+      remote = arr.empty? ? nil : arr[0]
+      return remote
+    end
+
+    def _same_commit_id?(branch1, branch2)
+      arr = `git rev-parse #{branch1} #{branch2}`.split()
+      return arr[0] == arr[1]
+    end
+
     def _load_startup_file()
       filename = ENV['GI_STARTUP']
       if filename && ! filename.empty?
@@ -564,17 +577,33 @@ END
       end
 
       @action.("git pull && git stash && git rebase && git stash pop")
-      def update(branch=nil)
-        git "pull"
+      @option.(:rebase, "-b, --rebase", "rebase if prev branch updated")
+      def update(branch=nil, rebase: false)
         if _curr_branch() == GIT_CONFIG.initial_branch
+          git "pull"
           return
         end
+        #
         branch ||= _prev_branch()
-        output = `git diff`
-        changed = ! output.empty?
-        git "stash", "push" if changed
-        git "rebase", branch
-        git "stash", "pop"  if changed
+        remote = _remote_repo(branch)  or
+          raise action_error("Previous branch '#{branch}' has no remote repo. (Hint: run `gi branch:upstream -t #{branch} origin`.)")
+        puts "[INFO] previous: #{branch}, remote: #{remote}" unless $QUIET_MODE
+        #
+        git "fetch"
+        file_changed    = ! `git diff`.empty?
+        remote_updated  = ! _same_commit_id?(branch, "#{remote}/#{branch}")
+        rebase_required = ! `git log --oneline HEAD..#{branch}`.empty?
+        if remote_updated || (rebase && rebase_required)
+          git "stash", "push", "-q" if file_changed
+          if remote_updated
+            git "checkout", "-q", branch
+            #git "reset", "--hard", "#{remote}/#{branch}"
+            git "pull"
+            git "checkout", "-q", "-"
+          end
+          git "rebase", branch      if rebase
+          git "stash", "pop", "-q"  if file_changed
+        end
       end
 
       @action.("print upstream repo name of current branch")
