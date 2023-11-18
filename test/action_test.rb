@@ -387,6 +387,53 @@ Oktest.scope do
         end
       end
 
+      topic 'branch:current' do
+        spec "show current branch name" do
+          output, sout = main "branch:current"
+           ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
+           ok {output} == "main\n"
+        end
+      end
+
+      topic 'branch:parent' do
+        spec "show parent branch name (EXPERIMENTAL)" do
+          br = "br6489"
+          system! "git commit --allow-empty -q -m 'for #{br} #1'"
+          system! "git checkout -q -b #{br}"
+          system! "git commit --allow-empty -q -m 'for #{br} #2'"
+          ok {curr_branch()} == br
+          _, sout = main "branch:parent"
+          ok {sout} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            main
+          END
+          #
+          system! "git checkout -q -b #{br}x"
+          ok {curr_branch()} == "#{br}x"
+          _, sout = main "branch:parent"
+          ok {sout} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            br6489
+          END
+        end
+      end
+
+      topic 'branch:previous' do
+        spec "show previous branch name" do
+          br = "br0184"
+          #
+          system! "git checkout -q -b #{br}"
+          output, sout = main "branch:previous"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {output} == "main\n"
+          #
+          system! "git checkout -q -b #{br}xx"
+          output, sout = main "branch:previous"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {output} == "#{br}\n"
+        end
+      end
+
     }
 
 

@@ -615,6 +615,34 @@ END
         output.each_line {|line| puts line.split()[1] }
       end
 
+      @action.("show current branch name")
+      def current()
+        git "rev-parse", "--abbrev-ref", "HEAD"
+        #git "symbolic-ref", "--short", "HEAD"
+        #git "branch", "--show-current"
+      end
+
+      @action.("show previous branch name")
+      def previous()
+        #git "rev-parse", "--symbolic-full-name", "@{-1}"
+        git "rev-parse", "--abbrev-ref", "@{-1}"
+      end
+
+      @action.("show parent branch name (EXPERIMENTAL)")
+      def parent()
+        # ref: https://stackoverflow.com/questions/3161204/
+        command = <<~'END'
+          git show-branch -a \
+          | sed 's/].*//' \
+          | grep '\*' \
+          | grep -v "\\[$(git branch --show-current)\$" \
+          | head -n1 \
+          | sed 's/^.*\[//'
+        END
+        echoback(command.gsub(/\\\n/, '').strip())
+        puts _parent_branch()
+      end
+
     end
 
     define_alias("branches", "branch:list")
