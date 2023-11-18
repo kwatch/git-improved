@@ -425,33 +425,6 @@ END
         git "branch", opt
       end
 
-      @action.("print CURR/PREV/PARENT branch name")
-      def echo(branch)
-        case branch
-        when "CURR"
-          git "rev-parse", "--abbrev-ref", "HEAD"
-          #git "symbolic-ref", "--short", "HEAD"
-          #git "branch", "--show-current"
-        when "PREV", "-"
-          #git "rev-parse", "--symbolic-full-name", "@{-1}"
-          git "rev-parse", "--abbrev-ref", "@{-1}"
-        when "PARENT"    # (EXPERIMENTAL)
-          # ref: https://stackoverflow.com/questions/3161204/
-          command = <<~'END'
-            git show-branch -a \
-            | sed 's/].*//' \
-            | grep '\*' \
-            | grep -v "\\[$(git branch --show-current)\$" \
-            | head -n1 \
-            | sed 's/^.*\[//'
-          END
-          echoback(command.gsub(/\\\n/, '').strip())
-          puts _parent_branch()
-        else
-          git "rev-parse", "--abbrev-ref", branch
-        end
-      end
-
       @action.("switch to previous or other branch", important: true)
       def switch(branch=nil)
         branch = _resolve_except_prev_branch(branch)
@@ -641,6 +614,16 @@ END
         END
         echoback(command.gsub(/\\\n/, '').strip())
         puts _parent_branch()
+      end
+
+      @action.("print CURR/PREV/PARENT branch name")
+      def echo(branch)
+        case branch
+        when "CURR"      ; run_action "current"
+        when "PREV", "-" ; run_action "previous"
+        when "PARENT"    ; run_action "parent"    # (EXPERIMENTAL)
+        else             ; git "rev-parse", "--abbrev-ref", branch
+        end
       end
 
     end

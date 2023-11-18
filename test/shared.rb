@@ -88,5 +88,9 @@ Oktest.global_scope do
     system! "git reset -q --hard #{$initial_commit_id}"
   end
 
+  def delete_all_branches_except_main()
+    branch_names = `git branch -l`.sub(/^\* .*\n/, '').sub(/^.*main\n/, '').split()
+    system! "git branch -D -q #{branch_names.join(' ')}"
+  end
 
 end

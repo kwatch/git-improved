@@ -60,69 +60,6 @@ Oktest.scope do
         end
       end
 
-      topic 'branch:echo' do
-        spec "print CURR/PREV/PARENT branch name" do
-          ## CURR
-          br = "br1129"
-          system! "git checkout -q -b #{br}"
-          output, sout = main "branch:echo", "CURR"
-          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
-          ok {output} == "#{br}\n"
-          system! "git checkout -q main"
-          output, sout = main "branch:echo", "CURR"
-          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
-          ok {output} == "main\n"
-          ## PREV
-          br = "br0183"
-          system! "git checkout -q -b #{br}"
-          output, sout = main "branch:echo", "PREV"
-          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
-          ok {output} == "main\n"
-          system! "git checkout -q -b #{br}xx"
-          output, sout = main "branch:echo", "PREV"
-          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
-          ok {output} == "#{br}\n"
-          ## PARENT
-          br = "br6488"
-          system! "git checkout -q main"
-          system! "git commit --allow-empty -q -m 'for #{br} #1'"
-          system! "git checkout -q -b #{br}"
-          system! "git commit --allow-empty -q -m 'for #{br} #2'"
-          ok {curr_branch()} == br
-          output, sout = main "branch:echo", "PARENT"
-          ok {sout} == <<~'END'
-            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
-            main
-          END
-          ok {output} == ""
-          #
-          system! "git checkout -q -b #{br}x"
-          ok {curr_branch()} == "#{br}x"
-          output, sout = main "branch:echo", "PARENT"
-          ok {sout} == <<~'END'
-            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
-            br6488
-          END
-          ok {output} == ""
-          ## other
-          system! "git checkout -q #{br}"
-          output, sout = main "branch:echo", "HEAD"
-          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
-          ok {output} == "br6488\n"
-          output, sout, serr, status = main! "branch:echo", "current", tty: true
-          ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref current\n"
-          ok {serr} == <<~"END"
-            \e[31m[ERROR]\e[0m Git command failed: git rev-parse --abbrev-ref current
-          END
-          ok {output} == <<~'END'
-            fatal: ambiguous argument 'current': unknown revision or path not in the working tree.
-            Use '--' to separate paths from revisions, like this:
-            'git <command> [<revision>...] -- [<file>...]'
-            current
-          END
-        end
-      end
-
       topic 'branch:delete' do
         spec "delete a branch" do
           br = "br6993"
@@ -431,6 +368,75 @@ Oktest.scope do
           output, sout = main "branch:previous"
           ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
           ok {output} == "#{br}\n"
+        end
+      end
+
+      topic 'branch:echo' do
+        #spec "print CURR/PREV/PARENT branch name"
+        spec "print current branch name if argument is 'CURR'." do
+          br = "br1129"
+          system! "git checkout -q -b #{br}"
+          output, sout = main "branch:echo", "CURR"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
+          ok {output} == "#{br}\n"
+          system! "git checkout -q main"
+          output, sout = main "branch:echo", "CURR"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
+          ok {output} == "main\n"
+        end
+        spec "print previous branch name if argument is 'PREV'." do
+          br = "br0183"
+          system! "git checkout -q -b #{br}"
+          output, sout = main "branch:echo", "PREV"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {output} == "main\n"
+          system! "git checkout -q -b #{br}xx"
+          output, sout = main "branch:echo", "PREV"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref \"@{-1}\"\n"
+          ok {output} == "#{br}\n"
+        end
+        spec "print parent branch name if argument is 'PARENT'." do
+          br = "br6488"
+          delete_all_branches_except_main()
+          system! "git checkout -q main"
+          system! "git commit --allow-empty -q -m 'for #{br} #1'"
+          system! "git checkout -q -b #{br}"
+          system! "git commit --allow-empty -q -m 'for #{br} #2'"
+          ok {curr_branch()} == br
+          output, sout = main "branch:echo", "PARENT"
+          ok {sout} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            main
+          END
+          ok {output} == ""
+          #
+          system! "git checkout -q -b #{br}x"
+          ok {curr_branch()} == "#{br}x"
+          output, sout = main "branch:echo", "PARENT"
+          ok {sout} == <<~'END'
+            [gi]$ git show-branch -a | sed 's/].*//' | grep '\*' | grep -v "\\[$(git branch --show-current)\$" | head -n1 | sed 's/^.*\[//'
+            br6488
+          END
+          ok {output} == ""
+        end
+        spec "print other branch name if other argument is specified." do
+          br = "br6490"
+          system! "git checkout -q -b #{br}"
+          output, sout = main "branch:echo", "HEAD"
+          ok {sout} == "[gi]$ git rev-parse --abbrev-ref HEAD\n"
+          ok {output} == "br6490\n"
+          #
+          output, sout, serr, status = main! "branch:echo", "current", tty: true
+          ok {unesc(sout)} == "[gi]$ git rev-parse --abbrev-ref current\n"
+          ok {serr} == <<~"END"
+            \e[31m[ERROR]\e[0m Git command failed: git rev-parse --abbrev-ref current
+          END
+          ok {output} == <<~'END'
+            fatal: ambiguous argument 'current': unknown revision or path not in the working tree.
+            Use '--' to separate paths from revisions, like this:
+            'git <command> [<revision>...] -- [<file>...]'
+            current
+          END
         end
       end
 
