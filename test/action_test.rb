@@ -1075,6 +1075,18 @@ Oktest.scope do
         end
       end
 
+      topic 'file:egrep' do
+        spec "find by pattern" do
+          file = "file0154"
+          dummy_file(file, "AA\nBB\nCC\n")
+          system! "git add #{file}"
+          system! "git commit -q -m 'add #{file}'"
+          output, sout = main "file:egrep", "B+", "HEAD"
+          ok {sout} == "[gi]$ git grep -E B+ HEAD\n"
+          ok {output} == "HEAD:file0154:BB\n"
+        end
+      end
+
     }
 
 

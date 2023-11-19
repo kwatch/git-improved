@@ -763,6 +763,13 @@ END
         end
       end
 
+      @action.("find by pattern")
+      def egrep(pattern, commit=nil)
+        args = []
+        args << commit if commit
+        git "grep", "-E", pattern, *args
+      end
+
     end
 
     define_alias("files"    , "file:list")
