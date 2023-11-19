@@ -508,7 +508,7 @@ Oktest.scope do
           file = "file9247.txt"
           dummy_file(file, "A\nB\n")
           system! "git add #{file}"
-          output, sout = main "commit:create", "add '#{file}'"
+          output, sout = main "commit:create", "-m", "add '#{file}'"
           ok {sout} == "[gi]$ git commit -m \"add '#{file}'\"\n"
           ok {output} =~ /^ 1 file changed, 2 insertions\(\+\)$/
           ok {`git log -1 --oneline`} =~ /\A\h{7} add '#{file}'\n\z/
