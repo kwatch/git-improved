@@ -1590,7 +1590,7 @@ END
         end
       end
 
-      topic 'stash:push' do
+      topic 'stash:put' do
         spec "save current changes into stash" do
           file1 = dummy_stash1("file4591.txt")
           system! "git stash clear"
@@ -1598,7 +1598,7 @@ END
           system! "echo KKK >> #{file1}"
           ok {`git diff`} != ""
           ok {`git stash list`} == ""
-          output, sout = main "stash:push"
+          output, sout = main "stash:put"
           ok {sout} == "[gi]$ git stash push\n"
           ok {output} != ""
           ok {`git diff`} == ""

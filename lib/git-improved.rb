@@ -1308,7 +1308,7 @@ END
       @action.("save current changes into stash", important: true)
       @option.(:message, "-m <message>", "message")
       @option.(:pick, "-p, --pick"     , "pick up changes interactively")
-      def push(*path, message: nil, pick: false)
+      def put(*path, message: nil, pick: false)
         opts = []
         opts << "-m" << message if message
         opts << "-p" if pick
