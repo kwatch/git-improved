@@ -966,8 +966,8 @@ END
 
         @action.("start `git rebase -i` to edit commit history", important: true)
         @option.(:count  , "-n, --num=<N>", "edit last N commits")
-        @option.(:stash, "-s, --stash", "store current changes into stash temporarily")
-        def start(commit=nil, count: nil, stash: false)
+        #@option.(:stash, "-s, --stash", "store current changes into stash temporarily")
+        def start(commit=nil, count: nil)
           if commit && count
             raise action_error("Commit-id and `-n` option are exclusive.")
           elsif commit
@@ -978,7 +978,6 @@ END
           else
             raise action_error("Commit-id or `-n` option required.")
           end
-          git "stash", "push" if stash
           git "rebase", "-i", "--autosquash", arg
         end
 
