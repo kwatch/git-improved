@@ -1237,13 +1237,13 @@ END
       @action.("download and upload commits")
       @optionset.(uploadopts)
       def both(upstream: nil, origin: false, force: false)
-        run_action "download"
-        run_action "upload", upstream: upstream, origin: origin, force: force
+        run_action "pull"
+        run_action "push", upstream: upstream, origin: origin, force: force
       end
 
-      @action.("upload commits")
+      @action.("upload commits to remote")
       @optionset.(uploadopts)
-      def upload(upstream: nil, origin: false, force: false)
+      def push(upstream: nil, origin: false, force: false)
         branch = _curr_branch()
         upstream ||= "origin" if origin
         upstream ||= _ask_remote_repo(branch)
@@ -1270,7 +1270,7 @@ END
 
       @action.("download commits from remote and apply them to local")
       @option.(:apply, "-N, --not-apply", "just download, not apply", value: false)
-      def download(apply: true)
+      def pull(apply: true)
         if apply
           git "pull", "--prune"
         else
@@ -1281,10 +1281,12 @@ END
     end
 
     define_alias("sync"     , "sync:both")
-    define_alias("upload"   , "sync:upload")
-    define_alias("up"       , "sync:upload")
-    define_alias("download" , "sync:download")
-    define_alias("dl"       , "sync:download")
+    define_alias("push"     , "sync:push")
+    define_alias("upload"   , "sync:push")
+    define_alias("up"       , "sync:push")
+    define_alias("pull"     , "sync:pull")
+    define_alias("download" , "sync:pull")
+    define_alias("dl"       , "sync:pull")
 
 
     ##

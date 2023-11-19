@@ -1746,21 +1746,21 @@ no changes added to commit (use "git add" and/or "git commit -a")
         end
       end
 
-      topic 'sync:download' do
+      topic 'sync:pull' do
         spec "download commits from remote and apply them to local" do
           ## TODO
           dryrun_mode do
-            _, sout = main "sync:download"
+            _, sout = main "sync:pull"
             ok {sout} == "[gi]$ git pull --prune\n"
           end
         end
       end
 
-      topic 'sync:upload' do
+      topic 'sync:push' do
         spec "upload commits" do
           ## TODO
           dryrun_mode do
-            _, sout = main "sync:upload", stdin: "\n"
+            _, sout = main "sync:push", stdin: "\n"
             ok {sout} == <<~"END"
               Enter the remote repo name (default: \e[1morigin\e[0m) : [gi]$ git push -u origin main
             END
