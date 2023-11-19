@@ -904,7 +904,7 @@ Oktest.scope do
         before do
           _reset_all_commits()
         end
-        spec "list (un)registered/ignored/missing files" do
+        spec "list (un)tracked/ignored/missing files" do
           file1 = "file1154.txt"
           file2 = "file1154.css"
           file3 = "file1154.json"
@@ -918,15 +918,15 @@ Oktest.scope do
           system! "git commit -q -m 'add #{file1} and #{file2}'"
           writefile(".gitignore", "*~\n")
           at_end { rm_rf ".gitignore" }
-          ## registered
+          ## tracked
           output, sout = main "file:list"
           ok {sout} == "[gi]$ git ls-files .\n"
           ok {output} == <<~'END'
             file1154.css
             file1154.txt
           END
-          ## unregistered
-          output, sout = main "file:list", "-F", "unregistered"
+          ## untracked
+          output, sout = main "file:list", "-F", "untracked"
           ok {sout} == <<~'END'
             [gi]$ git status -s . | grep '^?? '
             ?? .gitignore
@@ -974,13 +974,13 @@ Oktest.scope do
         end
       end
 
-      topic 'file:register' do
-        spec "register files into the repository" do
+      topic 'file:track' do
+        spec "track files into the repository" do
           file = "file2717.tmp"
           dummy_file(file, "A\n")
           #
           ok {`git ls-files .`} !~ /^#{file}$/
-          output, sout = main "file:register", file
+          output, sout = main "file:track", file
           ok {sout} == "[gi]$ git add #{file}\n"
           ok {output} == ""
           ok {`git ls-files .`} =~ /^#{file}$/
@@ -1063,7 +1063,7 @@ Oktest.scope do
   $ cd mysample
   $ gi repo:init -u yourname -e yourname@gmail.com
   $ vi README.md                   # create a new file
-  $ gi track README.md             # register files into the repository
+  $ gi track README.md             # track files into the repository
   $ gi cc "add README file"        # commit changes
   $ vi README.md                   # update an existing file
   $ gi stage .                     # add changes into staging area
@@ -1655,9 +1655,9 @@ END
       before do
         _reset_all_commits()
         #
-        file1 = "file8040.txt"     # registered, modified
-        file2 = "file8040.css"     # registered
-        file3 = "file8040.html"    # not registered
+        file1 = "file8040.txt"     # tracked, modified
+        file2 = "file8040.css"     # tracked
+        file3 = "file8040.html"    # not tracked
         dummy_file(file1, "A\n")
         dummy_file(file2, "B\n")
         dummy_file(file3, "C\n")

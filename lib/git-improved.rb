@@ -97,7 +97,7 @@ module GitImproved
   $ cd mysample
   $ gi repo:init -u yourname -e yourname@gmail.com
   $ vi README.md                   # create a new file
-  $ gi track README.md             # register files into the repository
+  $ gi track README.md             # track files into the repository
   $ gi cc "add README file"        # commit changes
   $ vi README.md                   # update an existing file
   $ gi stage .                     # add changes into staging area
@@ -389,20 +389,20 @@ END
       end
 
       status_optset = optionset {
-        @option.(:registeredonly, "-U", "ignore unregistered files")
+        @option.(:trackedonly, "-U", "ignore untracked files")
       }
 
       @action.("show status in compact format")
       @optionset.(status_optset)
-      def compact(*path, registeredonly: false)
-        opts = registeredonly ? ["-uno"] : []
+      def compact(*path, trackedonly: false)
+        opts = trackedonly ? ["-uno"] : []
         git "status", "-sb", *opts, *path
       end
 
       @action.("show status in default format")
       @optionset.(status_optset)
-      def default(*path, registeredonly: false)
-        opts = registeredonly ? ["-uno"] : []
+      def default(*path, trackedonly: false)
+        opts = trackedonly ? ["-uno"] : []
         git "status", *opts, *path
       end
 
@@ -643,15 +643,15 @@ END
     ##
     category "file:" do
 
-      @action.("list (un)registered/ignored/missing files")
+      @action.("list (un)tracked/ignored/missing files")
       @option.(:filtertype, "-F <filtertype>", "one of:", detail: <<~END)
-                              - registered   : only registered files (default)
-                              - unregistered : only not-registered files
-                              - ignored      : ignored files by '.gitignore'
-                              - missing      : registered but missing files
+                              - tracked   : only tracked files (default)
+                              - untracked : only not-tracked files
+                              - ignored   : ignored files by '.gitignore'
+                              - missing   : tracked but missing files
                             END
       @option.(:full, "--full", "show full list")
-      def list(path=".", filtertype: "registered", full: false)
+      def list(path=".", filtertype: "tracked", full: false)
         method_name = "__file__list__#{filtertype}"
         respond_to?(method_name, true)  or (
           s = self.private_methods.grep(/^__file__list__(.*)/) { $1 }.join('/')
@@ -662,12 +662,12 @@ END
 
       private
 
-      def __file__list__registered(path, full)
+      def __file__list__tracked(path, full)
         paths = path ? [path] : []
         git "ls-files", *paths
       end
 
-      def __file__list__unregistered(path, full)
+      def __file__list__untracked(path, full)
         opt = full ? " -u" : nil
         echoback "git status -s#{opt} #{path} | grep '^?? '"
         output = `git status -s#{opt} #{path}`
@@ -690,20 +690,20 @@ END
 
       ## TODO: should move to 'file:' category?
       @action.("register files into the repository", important: true)
-      @option.(:force, "-f, --force", "allow to register ignored files")
-      @option.(:recursive, "-r, --recursive", "register files under directories")
-      #@option.(:allow_empty_dir, "-e, --allow-empty-dir", "create '.gitkeep' to register empty directory")
-      def register(file, *file2, force: false, recursive: false)
+      @option.(:force, "-f, --force", "allow to track ignored files")
+      @option.(:recursive, "-r, --recursive", "track files under directories")
+      #@option.(:allow_empty_dir, "-e, --allow-empty-dir", "create '.gitkeep' to track empty directory")
+      def track(file, *file2, force: false, recursive: false)
         files = [file] + file2
         files.each do |x|
           output = `git ls-files -- #{x}`
           output.empty?  or
-            raise action_error("#{x}: Already registered.")
+            raise action_error("#{x}: Already tracked.")
         end
         files.each do |x|
           if File.directory?(x)
             recursive  or
-              raise action_error("#{x}: File expected, but is a directory (specify `-r` or `--recursive` otpion to register files under the directory).")
+              raise action_error("#{x}: File expected, but is a directory (specify `-r` or `--recursive` otpion to track files under the directory).")
           end
         end
         opts = force ? ["-f"] : []
@@ -759,8 +759,8 @@ END
 
     define_alias("files"    , "file:list")
     #define_alias("ls"       , "file:list")
-    define_alias("register" , "file:register")
-    define_alias("track"    , "file:register")
+    define_alias("track"    , "file:track")
+    define_alias("register" , "file:track")
     define_alias("changes"  , "file:changes")
     #define_alias("move"     , "file:move")
     #define_alias("rename"   , "file:rename")
@@ -775,14 +775,14 @@ END
 
       @action.("add changes of files into staging area", important: true)
       @option.(:pick, "-p, --pick", "pick up changes interactively")
-      #@option.(:update, "-u, --update", "add all changes of registered files")
+      #@option.(:update, "-u, --update", "add all changes of tracked files")
       def add(path, *path2, pick: false) # , update: false
         paths = [path] + path2
         paths.each do |x|
           next if File.directory?(x)
           output = `git ls-files #{x}`
           ! output.strip.empty?  or
-            raise action_error("#{x}: Not registered yet (run 'register' action instead).")
+            raise action_error("#{x}: Not tracked yet (run 'track' action instead).")
         end
         #
         opts = []
