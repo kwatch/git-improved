@@ -1062,15 +1062,15 @@ Oktest.scope do
   $ mkdir mysample              # or: gi repo:clone github:<user>/<repo>
   $ cd mysample
   $ gi repo:init -u yourname -e yourname@gmail.com
-  $ vi README.md                # create a new file
-  $ gi track README.md          # register files into the repository
-  $ gi cc "add README file"     # commit changes
-  $ vi README.md                # update an existing file
-  $ gi stage .                  # add changes into staging area
-  $ gi staged                   # show changes in staging area
-  $ gi cc "update README file"  # commit changes
+  $ vi README.md                   # create a new file
+  $ gi track README.md             # register files into the repository
+  $ gi cc "add README file"        # commit changes
+  $ vi README.md                   # update an existing file
+  $ gi stage .                     # add changes into staging area
+  $ gi staged                      # show changes in staging area
+  $ gi cc -m "update README file"  # commit changes
   $ gi repo:remote:origin github:yourname/mysample
-  $ gi up                       # upload local commits to remote repo
+  $ gi up                          # upload local commits to remote repo
 
 \e[1;34mDocument:\e[0m
   https://kwatch.github.io/git-improved/
