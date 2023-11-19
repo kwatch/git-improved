@@ -244,6 +244,28 @@ Oktest.scope do
         end
       end
 
+      topic 'branch:reset' do
+        spec "change commit-id of current HEAD" do
+          system "git commit --allow-empty -q -m 'test #1'"
+          commit_id1 = `git rev-parse HEAD`[0..6]
+          system "git commit --allow-empty -q -m 'test #2'"
+          system "git commit --allow-empty -q -m 'test #3'"
+          commit_id3 = `git rev-parse HEAD`[0..6]
+          ok {commit_id1} != commit_id3
+          #
+          ok {`git rev-parse HEAD`[0..6]} != commit_id1
+          output, sout = main "branch:reset", commit_id1
+          ok {sout} == "[gi]$ git reset #{commit_id1}\n"
+          ok {output} == ""
+          ok {`git rev-parse HEAD`[0..6]} == commit_id1
+          #
+          output, sout = main "branch:reset", commit_id3
+          ok {sout} == "[gi]$ git reset #{commit_id3}\n"
+          ok {output} == ""
+          ok {`git rev-parse HEAD`[0..6]} == commit_id3
+        end
+      end
+
       topic 'branch:switch' do
         spec "switch to previous or other branch" do
           br = "br3413"

@@ -536,6 +536,14 @@ END
         end
       end
 
+      @action.("change commit-id of current HEAD")
+      @option.(:restore, "--restore", "restore files after resetted")
+      def reset(commit, restore: false)
+        opts = []
+        opts << "--hard" if restore
+        git "reset", *opts, commit
+      end
+
       @action.("rebase (move) current branch on top of other branch")
       @option.(:from, "--from=<commit-id>", "commit-id where current branch started")
       def rebase(branch_onto, branch_upstream=nil, from: nil)
