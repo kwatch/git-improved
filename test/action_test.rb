@@ -747,26 +747,6 @@ Oktest.scope do
         end
       end
 
-      topic 'commit:blame' do
-        def _prepare(file)
-          dummy_file(file, "AAA\n")
-          system! "git add #{file}"
-          system! "git commit -q -m 'add #{file}'"
-          writefile(file, "AAA\nBBB\n")
-          system! "git commit -q -m 'update #{file}' #{file}"
-        end
-        spec "print commit-id, author, and timestap of each line" do
-          file = "file2726"
-          _prepare(file)
-          output, sout = main "commit:blame", file
-          ok {sout} == "[gi]$ git blame file2726\n"
-          ok {output} =~ partial_regexp(<<~'END')
-            {==\h{8}==} (user1 {==.*==} 1) AAA
-            {==\h{8}==} (user1 {==.*==} 2) BBB
-          END
-        end
-      end
-
     }
 
 
@@ -1072,6 +1052,26 @@ Oktest.scope do
             HEAD is now at {==\\h{7}==} add #{file}
           END
           ok {`git diff`} == ""
+        end
+      end
+
+      topic 'file:blame' do
+        def _prepare(file)
+          dummy_file(file, "AAA\n")
+          system! "git add #{file}"
+          system! "git commit -q -m 'add #{file}'"
+          writefile(file, "AAA\nBBB\n")
+          system! "git commit -q -m 'update #{file}' #{file}"
+        end
+        spec "print commit-id, author, and timestap of each line" do
+          file = "file2726"
+          _prepare(file)
+          output, sout = main "file:blame", file
+          ok {sout} == "[gi]$ git blame file2726\n"
+          ok {output} =~ partial_regexp(<<~'END')
+            {==\h{8}==} (user1 {==.*==} 1) AAA
+            {==\h{8}==} (user1 {==.*==} 2) BBB
+          END
         end
       end
 

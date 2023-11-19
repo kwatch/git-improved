@@ -763,6 +763,15 @@ END
         end
       end
 
+      @action.("print commit-id, author, and timestap of each line")
+      @option.(:range, "-L <N1,N2|:func>", "range (start,end) or function name")
+      def blame(path, *path2, range: nil)
+        paths = [path] + path2
+        opts = []
+        opts << "-L" << range if range
+        git "blame", *opts, *paths
+      end
+
       @action.("find by pattern")
       def egrep(pattern, commit=nil)
         args = []
@@ -917,15 +926,6 @@ END
         else
           git "reset", *opts, "HEAD^"
         end
-      end
-
-      @action.("print commit-id, author, and timestap of each line")
-      @option.(:range, "-L <N1,N2|:func>", "range (start,end) or function name")
-      def blame(path, *path2, range: nil)
-        paths = [path] + path2
-        opts = []
-        opts << "-L" << range if range
-        git "blame", *opts, *paths
       end
 
     end
