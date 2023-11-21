@@ -823,9 +823,9 @@ END
     category "commit:" do
 
       @action.("create a new commit", important: true)
-      @option.(:message, "-m, --message=<message>", "commit message")
-      def create(*path, message: nil)
-        opts = message ? ["-m", message] : []
+      #@option.(:message, "-m, --message=<message>", "commit message")
+      def create(message=nil, *path)
+        opts = message && ! message.empty? ? ["-m", message] : []
         args = path.empty? ? [] : ["--", *path]
         git "commit", *opts, *args
       end
