@@ -926,37 +926,34 @@ END
       @option.(:format, "-F, --format=<format>", "default/compact/detailed/graph")
       @option.(:author, "-u, --author", "show author name before '@' of email address (only for 'graph' format)")
       def show(*path, all: false, format: "default", author: false)
-        method_name = "__history_#{format}_format"
-        respond_to?(method_name, true)  or
+        opts = []
+        HISTORY_SHOW_OPTIONS.key?(format)  or
           raise option_error("#{format}: Unknown format.")
-        opts = __send__(method_name, author: author)
+        val = HISTORY_SHOW_OPTIONS[format]
+        case val
+        when nil    ;
+        when String ; opts << val
+        when Array  ; opts.concat(val)
+        when Proc   ; opts.concat([val.call(author: author)].flatten)
+        else
+          raise TypeError.new("HISTORY_SHOW_OPTIONS[#{format.inspect}]: Unexpected type value: #{val.inspect}")
+        end
         opts = ["--all"] + opts if all
         ## use 'git!' to ignore pipe error when pager process quitted
         git! "log", *opts, *path
       end
 
-      private
-
-      def __history_default_format(**_kws)
-        return []
-      end
-
-      def __history_compact_format(**_kws)
-        return ["--oneline"]
-      end
-
-      def __history_detailed_format(**_kws)
-        return ["--format=fuller"]
-      end
-
-      def __history_graph_format(author: false, **_kws)
-        fmt = GIT_CONFIG.history_graph_format
-        fmt = fmt.sub(/ ?<?%a[eEnNlL]>? ?/, ' ') unless author
-        opts = ["--format=#{fmt}"] + GIT_CONFIG.history_graph_options
-        return opts
-      end
-
-      public
+      HISTORY_SHOW_OPTIONS = {
+        "default"  => nil,
+        "compact"  => "--oneline",
+        "detailed" => "--format=fuller",
+        "graph"    => proc {|author: false, **_kws|
+          fmt = GIT_CONFIG.history_graph_format
+          fmt = fmt.sub(/ ?<?%a[eEnNlL]>? ?/, ' ') unless author
+          opts = ["--format=#{fmt}"] + GIT_CONFIG.history_graph_options
+          opts
+        },
+      }
 
       @action.("show commits not uploaded yet")
       def notuploaded()
