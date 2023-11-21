@@ -537,7 +537,7 @@ END
       end
 
       @action.("change commit-id of current HEAD")
-      @option.(:restore, "--restore", "restore files after resetted")
+      @option.(:restore, "--restore", "restore files after reset")
       def reset(commit, restore: false)
         opts = []
         opts << "--hard" if restore
