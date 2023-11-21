@@ -36,52 +36,29 @@ module GitImproved
   class GitConfig
 
     def initialize()
-      @values = {}
+      @prompt                  = "[#{File.basename($0)}]$ "
+      @default_action          = "status:here"   # or: "status:info"
+      @initial_branch          = "main"   # != 'master'
+      @initial_commit_message  = "Initial commit (empty)"
+      @gitignore_items         = ["*~", "*.DS_Store", "tmp", "*.pyc"]
+      @history_graph_format    = "%C(auto)%h %ad <%al> | %d %s"
+     #@history_graph_format    = "\e[32m%h %ad\e[0m <%al> \e[2m|\e[0m\e[33m%d\e[0m %s"
+      @history_graph_options   = ["--graph", "--date=short", "--decorate"]
     end
 
-    def each(&block)
-      return enum_for(:each) unless block_given?()
-      @values.each(&block)
-    end
-
-    def [](key)
-      return @values[key]
-    end
-
-    def []=(key, val)
-      @values[key] = val
-      return val
-    end
-
-    def has?(key)
-      return @values.key?(key)
-    end
-
-    def method_missing(meth, *args)
-      if meth.to_s.end_with?('=') && args.length == 1
-        key = meth.to_s.chomp('=').intern
-        @values[key] = args[0]
-        return @values[key]
-      elsif @values.key?(meth) && args.empty?
-        return @values[meth]
-      else
-        super
-      end
-    end
+    attr_accessor :prompt
+    attr_accessor :default_action
+    attr_accessor :initial_branch
+    attr_accessor :initial_commit_message
+    attr_accessor :gitignore_items
+    attr_accessor :history_graph_format
+   #attr_accessor :history_graph_format
+    attr_accessor :history_graph_options
 
   end
 
 
-  GIT_CONFIG = GitConfig.new.tap do |c|
-    c.prompt                  = "[#{File.basename($0)}]$ "
-    c.default_action          = "status:here"   # or: "status:info"
-    c.initial_branch          = "main"   # != 'master'
-    c.initial_commit_message  = "Initial commit (empty)"
-    c.gitignore_items         = ["*~", "*.DS_Store", "tmp", "*.pyc"]
-    c.history_graph_format    = "%C(auto)%h %ad <%al> | %d %s"
-   #c.history_graph_format    = "\e[32m%h %ad\e[0m <%al> \e[2m|\e[0m\e[33m%d\e[0m %s"
-    c.history_graph_options   = ["--graph", "--date=short", "--decorate"]
-  end
+  GIT_CONFIG = GitConfig.new
 
   APP_CONFIG = Benry::CmdApp::Config.new("Git Improved", VERSION).tap do |c|
     c.option_topic          = true
@@ -273,7 +250,7 @@ END
       if force || str =~ /\A[-+\w.,:=%\/^@]+\z/
         return str
       elsif str =~ /\A(-[-\w]+=)/
-        return $1 + qq($')
+        return $1 + _qq($')
       else
         #return '"' + str.gsub(/[$!`\\"]/) { "\\#{$&}" } + '"'
         return '"' + str.gsub(/[$!`\\"]/, "\\\\\\&") +  '"'
