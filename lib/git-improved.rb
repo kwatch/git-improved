@@ -1526,10 +1526,10 @@ END
       @_omit_actions_part = false
     end
 
-    def build_actions_part(*args, **kwargs)
+    def section_actions(*args, **kwargs)
       if @_omit_actions_part
         text ="  (Too long to show. Run `#{@config.app_command} -l` to list all actions.)"
-        return build_section(_header(:HEADER_ACTIONS), text)
+        return render_section(header(:HEADER_ACTIONS), text)
       else
         return super
       end

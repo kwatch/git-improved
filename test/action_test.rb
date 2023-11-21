@@ -1078,12 +1078,12 @@ Oktest.scope do
       topic 'file:egrep' do
         spec "find by pattern" do
           file = "file0154"
-          dummy_file(file, "AA\nBB\nCC\n")
+          dummy_file(file, "AAA7706\nBBB7706\nCCC7706\n")
           system! "git add #{file}"
           system! "git commit -q -m 'add #{file}'"
-          output, sout = main "file:egrep", "B+", "HEAD"
-          ok {sout} == "[gi]$ git grep -E B+ HEAD\n"
-          ok {output} == "HEAD:file0154:BB\n"
+          output, sout = main "file:egrep", "B+7706", "HEAD"
+          ok {sout} == "[gi]$ git grep -E B+7706 HEAD\n"
+          ok {output} == "HEAD:file0154:BBB7706\n"
         end
       end
 
@@ -1103,7 +1103,7 @@ Oktest.scope do
   -h, --help          : print help message (of action if specified)
   -V, --version       : print version
   -l, --list          : list actions and aliases
-  -L <topic>          : list of a topic (action|alias|category|abbrev)
+  -L <topic>          : topic list (actions|aliases|categories|abbrevs)
   -a, --all           : list hidden actions/options, too
   -q, --quiet         : quiet mode
   --color[=<on|off>]  : color mode
