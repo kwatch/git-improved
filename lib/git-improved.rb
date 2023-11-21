@@ -111,94 +111,50 @@ END
   end
 
 
-  class GitAction < Benry::CmdApp::Action
-    #include Benry::UnixCommand        ## include lazily
+  class GitCommandFailed < Benry::CmdApp::CommandError
+
+    def initialize(git_command=nil)
+      super "Git command failed: #{git_command}"
+      @git_command = git_command
+    end
+
+    attr_reader :git_commit
+
+  end
 
 
-    class GitCommandFailed < Benry::CmdApp::CommandError
+  module ActionHelper
 
-      def initialize(git_command=nil)
-        super "Git command failed: #{git_command}"
-        @git_command = git_command
+    def git(*args)
+      argstr = args.collect {|s| _qq(s) }.join(" ")
+      echoback("git #{argstr}")
+      return if $DRYRUN_MODE
+      out = $SUBPROCESS_OUTPUT || nil
+      if out
+        system(["git", "git"], *args, out: out, err: out)  or
+          raise GitCommandFailed, "git #{argstr}"
+      else
+        system(["git", "git"], *args)  or
+          raise GitCommandFailed, "git #{argstr}"
       end
+    end
 
-      attr_reader :git_commit
+    def git!(*args)
+      git(*args)
+    rescue GitCommandFailed
+      false
+    end
 
+    def system!(command)
+      out = $SUBPROCESS_OUTPUT || nil
+      if out
+        system command, exception: true, out: out, err: out
+      else
+        system command, exception: true
+      end
     end
 
     protected
-
-    def prompt()
-      return "[gi]$ "
-    end
-
-    def echoback(command)
-      e1, e2 = _color_mode?() ? ["\e[2m", "\e[0m"] : ["", ""]
-      puts "#{e1}#{prompt()}#{command}#{e2}" unless $QUIET_MODE
-      #puts "#{e1}#{super}#{e2}" unless $QUIET_MODE
-    end
-
-    def _lazyload_unixcommand()
-      require 'benry/unixcommand'
-      GitAction.class_eval {
-        include Benry::UnixCommand
-        remove_method :mkdir, :cd, :touch
-      }
-    end
-    private :_lazyload_unixcommand
-
-    def sys(*args)
-      if $DRYRUN_MODE
-        echoback args.join(' ')
-      else
-        _lazyload_unixcommand()
-        super
-      end
-    end
-
-    def sys!(*args)
-      if $DRYRUN_MODE
-        echoback args.join(' ')
-      else
-        _lazyload_unixcommand()
-        super
-      end
-    end
-
-    def mkdir(*args)
-      if $DRYRUN_MODE
-        echoback "mkdir #{args.join(' ')}"
-      else
-        _lazyload_unixcommand()
-        super
-      end
-    end
-
-    def cd(dir, &block)
-      if $DRYRUN_MODE
-        echoback "cd #{dir}"
-        if File.directory?(dir)
-          Dir.chdir dir, &block
-        else
-          yield if block_given?()
-        end
-        echoback "cd -" if block_given?()
-      else
-        _lazyload_unixcommand()
-        super
-      end
-    end
-
-    def touch(*args)
-      if $DRYRUN_MODE
-        echoback "touch #{args.join(' ')}"
-      else
-        _lazyload_unixcommand()
-        super
-      end
-    end
-
-    private
 
     def _curr_branch()
       return `git rev-parse --abbrev-ref HEAD`.strip()
@@ -334,36 +290,86 @@ END
       end
     end
 
+  end
+
+
+  class GitAction < Benry::CmdApp::Action
+    #include Benry::UnixCommand        ## include lazily
+    include ActionHelper
+
+    protected
+
+    def prompt()
+      return "[gi]$ "
+    end
+
+    def echoback(command)
+      e1, e2 = _color_mode?() ? ["\e[2m", "\e[0m"] : ["", ""]
+      puts "#{e1}#{prompt()}#{command}#{e2}" unless $QUIET_MODE
+      #puts "#{e1}#{super}#{e2}" unless $QUIET_MODE
+    end
+
+    def _lazyload_unixcommand()
+      require 'benry/unixcommand'
+      GitAction.class_eval {
+        include Benry::UnixCommand
+        remove_method :mkdir, :cd, :touch
+      }
+    end
+    private :_lazyload_unixcommand
+
+    def sys(*args)
+      if $DRYRUN_MODE
+        echoback args.join(' ')
+      else
+        _lazyload_unixcommand()
+        super
+      end
+    end
+
+    def sys!(*args)
+      if $DRYRUN_MODE
+        echoback args.join(' ')
+      else
+        _lazyload_unixcommand()
+        super
+      end
+    end
+
+    def mkdir(*args)
+      if $DRYRUN_MODE
+        echoback "mkdir #{args.join(' ')}"
+      else
+        _lazyload_unixcommand()
+        super
+      end
+    end
+
+    def cd(dir, &block)
+      if $DRYRUN_MODE
+        echoback "cd #{dir}"
+        if File.directory?(dir)
+          Dir.chdir dir, &block
+        else
+          yield if block_given?()
+        end
+        echoback "cd -" if block_given?()
+      else
+        _lazyload_unixcommand()
+        super
+      end
+    end
+
+    def touch(*args)
+      if $DRYRUN_MODE
+        echoback "touch #{args.join(' ')}"
+      else
+        _lazyload_unixcommand()
+        super
+      end
+    end
+
     public
-
-    def git(*args)
-      argstr = args.collect {|s| _qq(s) }.join(" ")
-      echoback("git #{argstr}")
-      return if $DRYRUN_MODE
-      out = $SUBPROCESS_OUTPUT || nil
-      if out
-        system(["git", "git"], *args, out: out, err: out)  or
-          raise GitCommandFailed, "git #{argstr}"
-      else
-        system(["git", "git"], *args)  or
-          raise GitCommandFailed, "git #{argstr}"
-      end
-    end
-
-    def git!(*args)
-      git(*args)
-    rescue GitCommandFailed
-      false
-    end
-
-    def system!(command)
-      out = $SUBPROCESS_OUTPUT || nil
-      if out
-        system command, exception: true, out: out, err: out
-      else
-        system command, exception: true
-      end
-    end
 
 
     ##
