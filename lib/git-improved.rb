@@ -156,17 +156,17 @@ END
 
     protected
 
-    def _curr_branch()
+    def curr_branch()
       return `git rev-parse --abbrev-ref HEAD`.strip()
     end
 
-    def _prev_branch()
+    def prev_branch()
       #s = `git rev-parse --symbolic-full-name @{-1}`.strip()
       #return s.split("/").last
       return `git rev-parse --abbrev-ref @{-1}`.strip()
     end
 
-    def _parent_branch()
+    def parent_branch()
       # ref: https://stackoverflow.com/questions/3161204/
       #   git show-branch -a \
       #   | sed 's/].*//' \
@@ -174,7 +174,7 @@ END
       #   | grep -v "\\[$(git branch --show-current)\$" \
       #   | head -n1 \
       #   | sed 's/^.*\[//'
-      curr = _curr_branch()
+      curr = curr_branch()
       end_str = "[#{curr}\n"
       output = `git show-branch -a`
       output.each_line do |line|
@@ -187,25 +187,25 @@ END
       return nil
     end
 
-    def _resolve_branch(branch)
+    def resolve_branch(branch)
       case branch
-      when "CURR"   ; return _curr_branch()
-      when "PREV"   ; return _prev_branch()
-      when "PARENT" ; return _parent_branch()
-      when "-"      ; return _prev_branch()
+      when "CURR"   ; return curr_branch()
+      when "PREV"   ; return prev_branch()
+      when "PARENT" ; return parent_branch()
+      when "-"      ; return prev_branch()
       else          ; return branch
       end
     end
 
-    def _resolve_except_prev_branch(branch)
+    def resolve_except_prev_branch(branch)
       if branch == nil || branch == "-" || branch == "PREV"
         return "-"
       else
-        return _resolve_branch(branch)
+        return resolve_branch(branch)
       end
     end
 
-    def _resolve_repository_url(url)
+    def resolve_repository_url(url)
       case url
       when /^github:/
         url =~ /^github:(?:\/\/)?([^\/]+)\/([^\/]+)$/  or
@@ -222,7 +222,7 @@ END
       end
     end
 
-    def _remote_repo(branch)
+    def remote_repo_of_branch(branch)
       branch_ = Regexp.escape(branch)
       output = `git config --get-regexp '^branch\\.#{branch_}\\.remote'`
       arr = output.each_line.grep(/^branch\..*?\.remote (.*)/) { $1 }
@@ -230,42 +230,18 @@ END
       return remote
     end
 
-    def _same_commit_id?(branch1, branch2)
-      arr = `git rev-parse #{branch1} #{branch2}`.split()
-      return arr[0] == arr[1]
+    def color_mode?
+      return $stdout.tty?
     end
 
-    def _load_startup_file()
-      filename = ENV['GI_STARTUP']
-      if filename && ! filename.empty?
-        load filename
-      end
-    end
-
-    def _confirm(question, default_yes: true)
-      if default_yes
-        return __confirm(question, "[Y/n]", "Y") {|ans| ans !~ /\A[nN]/ }
-      else
-        return __confirm(question, "[y/N]", "N") {|ans| ans !~ /\A[yY]/ }
-      end
-    end
-
-    def __confirm(question, prompt, default_answer, &block)
-      print "#{question} #{prompt}: "
-      $stdout.flush()
-      answer = $stdin.readline().strip()
-      anser = default_answer if answer.empty?
-      return yield(answer)
-    end
-
-    def _ask_to_user(question)
+    def ask_to_user(question)
       print "#{question} "
       $stdout.flush()
       answer = $stdin.readline().strip()
       return answer.empty? ? nil : answer
     end
 
-    def _ask_to_user!(question)
+    def ask_to_user!(question)
       answer = ""
       while answer.empty?
         print "#{question}: "
@@ -275,19 +251,38 @@ END
       return answer
     end
 
-    def _color_mode?
-      return $stdout.tty?
+    def confirm(question, default_yes: true)
+      if default_yes
+        return _confirm(question, "[Y/n]", "Y") {|ans| ans !~ /\A[nN]/ }
+      else
+        return _confirm(question, "[y/N]", "N") {|ans| ans !~ /\A[yY]/ }
+      end
+    end
+
+    private
+
+    def _confirm(question, prompt, default_answer, &block)
+      print "#{question} #{prompt}: "
+      $stdout.flush()
+      answer = $stdin.readline().strip()
+      anser = default_answer if answer.empty?
+      return yield(answer)
     end
 
     def _qq(str, force: false)
       if force || str =~ /\A[-+\w.,:=%\/^@]+\z/
         return str
       elsif str =~ /\A(-[-\w]+=)/
-        return $1 + _qq($')
+        return $1 + qq($')
       else
         #return '"' + str.gsub(/[$!`\\"]/) { "\\#{$&}" } + '"'
         return '"' + str.gsub(/[$!`\\"]/, "\\\\\\&") +  '"'
       end
+    end
+
+    def _same_commit_id?(branch1, branch2)
+      arr = `git rev-parse #{branch1} #{branch2}`.split()
+      return arr[0] == arr[1]
     end
 
   end
@@ -304,7 +299,7 @@ END
     end
 
     def echoback(command)
-      e1, e2 = _color_mode?() ? ["\e[2m", "\e[0m"] : ["", ""]
+      e1, e2 = color_mode?() ? ["\e[2m", "\e[0m"] : ["", ""]
       puts "#{e1}#{prompt()}#{command}#{e2}" unless $QUIET_MODE
       #puts "#{e1}#{super}#{e2}" unless $QUIET_MODE
     end
@@ -433,7 +428,7 @@ END
 
       @action.("switch to previous or other branch", important: true)
       def switch(branch=nil)
-        branch = _resolve_except_prev_branch(branch)
+        branch = resolve_except_prev_branch(branch)
         git "checkout", branch
         #git "switch", branch
       end
@@ -463,15 +458,15 @@ END
       @action.("merge current branch into previous or other branch", important: true)
       @optionset.(mergeopts)
       def join(branch=nil, delete: false, fastforward: false, reuse: false)
-        into_branch = _resolve_branch(branch || "PREV")
-        __merge(_curr_branch(), into_branch, true, fastforward, delete, reuse)
+        into_branch = resolve_branch(branch || "PREV")
+        __merge(curr_branch(), into_branch, true, fastforward, delete, reuse)
       end
 
       @action.("merge previous or other branch into current branch")
       @optionset.(mergeopts)
       def merge(branch=nil, delete: false, fastforward: false, reuse: false)
-        merge_branch = _resolve_branch(branch || "PREV")
-        __merge(merge_branch, _curr_branch(), false, fastforward, delete, reuse)
+        merge_branch = resolve_branch(branch || "PREV")
+        __merge(merge_branch, curr_branch(), false, fastforward, delete, reuse)
 
       end
 
@@ -481,7 +476,7 @@ END
         msg = switch \
             ? "Merge current branch #{b.(merge_branch)} into #{b.(into_branch)}." \
             : "Merge #{b.(merge_branch)} branch into #{b.(into_branch)}."
-        if _confirm(msg + " OK?")
+        if confirm(msg + " OK?")
           _check_fastforward_merge_available(into_branch, merge_branch)
           opts = fastforward ? ["--ff-only"] : ["--no-ff"]
           opts << "--no-edit" if reuse
@@ -515,7 +510,7 @@ END
       @action.("rename the current branch to other name")
       @option.(:target,  "-t <branch>", "target branch instead of current branch")
       def rename(new_branch, target: nil)
-        old_branch = target || _curr_branch()
+        old_branch = target || curr_branch()
         git "branch", "-m", old_branch, new_branch
       end
 
@@ -524,12 +519,12 @@ END
       @option.(:remote, "-r, --remote[=origin]", "delete a remote branch")
       def delete(branch, force: false, remote: nil)
         if branch == nil
-          branch = _curr_branch()
-          yes = _confirm "Are you sure to delete current branch '#{branch}'?", default_yes: false
+          branch = curr_branch()
+          yes = confirm "Are you sure to delete current branch '#{branch}'?", default_yes: false
           return unless yes
           git "checkout", "-" unless remote
         else
-          branch = _resolve_branch(branch)
+          branch = resolve_branch(branch)
         end
         if remote
           remote = "origin" if remote == true
@@ -553,11 +548,11 @@ END
       @action.("rebase (move) current branch on top of other branch")
       @option.(:from, "--from=<commit-id>", "commit-id where current branch started")
       def rebase(branch_onto, branch_upstream=nil, from: nil)
-        br_onto = _resolve_branch(branch_onto)
+        br_onto = resolve_branch(branch_onto)
         if from
           git "rebase", "--onto=#{br_onto}", from+"^"
         elsif branch_upstream
-          git "rebase", "--onto=#{br_onto}", _resolve_branch(branch_upstream)
+          git "rebase", "--onto=#{br_onto}", resolve_branch(branch_upstream)
         else
           git "rebase", br_onto
         end
@@ -566,13 +561,13 @@ END
       @action.("git pull && git stash && git rebase && git stash pop")
       @option.(:rebase, "-b, --rebase", "rebase if prev branch updated")
       def update(branch=nil, rebase: false)
-        if _curr_branch() == GIT_CONFIG.initial_branch
+        if curr_branch() == GIT_CONFIG.initial_branch
           git "pull"
           return
         end
         #
-        branch ||= _prev_branch()
-        remote = _remote_repo(branch)  or
+        branch ||= prev_branch()
+        remote = remote_repo_of_branch(branch)  or
           raise action_error("Previous branch '#{branch}' has no remote repo. (Hint: run `gi branch:upstream -t #{branch} origin`.)")
         puts "[INFO] previous: #{branch}, remote: #{remote}" unless $QUIET_MODE
         #
@@ -596,7 +591,7 @@ END
       @action.("print upstream repo name of current branch")
       def upstream()
         #git! "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"
-        branch = _curr_branch()
+        branch = curr_branch()
         echoback "git config --get-regexp '^branch\\.#{branch}\\.remote' | awk '{print $2}'"
         output = `git config --get-regexp '^branch\\.#{branch}\\.remote'`
         output.each_line {|line| puts line.split()[1] }
@@ -627,7 +622,7 @@ END
           | sed 's/^.*\[//'
         END
         echoback(command.gsub(/\\\n/, '').strip())
-        puts _parent_branch()
+        puts parent_branch()
       end
 
       @action.("print CURR/PREV/PARENT branch name")
@@ -1045,11 +1040,11 @@ END
 
       def _config_user_and_email(user, email)
         if user == nil && `git config --get user.name`.strip().empty?
-          user = _ask_to_user "User name:"
+          user = ask_to_user "User name:"
         end
         git "config", "user.name" , user   if user
         if email == nil && `git config --get user.email`.strip().empty?
-          email = _ask_to_user "Email address:"
+          email = ask_to_user "Email address:"
         end
         git "config", "user.email", email  if email
       end
@@ -1102,7 +1097,7 @@ END
       @action.("copy a repository ('github:<user>/<repo>' is available)")
       @optionset.(initopts.select(:user, :email))
       def clone(url, dir=nil, user: nil, email: nil)
-        url = _resolve_repository_url(url)
+        url = resolve_repository_url(url)
         args = dir ? [dir] : []
         files = Dir.glob("*")
         git "clone", url, *args
@@ -1129,7 +1124,7 @@ END
                    END
                  })
         def handle(name=nil, url=nil)
-          url = _resolve_repository_url(url) if url
+          url = resolve_repository_url(url) if url
           if name == nil
             git "remote", "-v"
           elsif url == nil
@@ -1274,7 +1269,7 @@ END
       @action.("upload commits to remote")
       @optionset.(uploadopts)
       def push(upstream: nil, origin: false, force: false)
-        branch = _curr_branch()
+        branch = curr_branch()
         upstream ||= "origin" if origin
         upstream ||= _ask_remote_repo(branch)
         #
@@ -1293,7 +1288,7 @@ END
           line =~ /\Abranch\.(.*)\.remote / && $1 == branch
         }
         return nil if has_upstream
-        remote = _ask_to_user "Enter the remote repo name (default: \e[1morigin\e[0m) :"
+        remote = ask_to_user "Enter the remote repo name (default: \e[1morigin\e[0m) :"
         return remote && ! remote.empty? ? remote : "origin"
       end
       private :_ask_remote_repo
