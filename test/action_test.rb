@@ -1206,9 +1206,9 @@ END
                 Initial commit (empty)
           END
         end
-        spec "option '-F detailed' shows commit history in detailed format." do
+        spec "option '-F fuller' shows commit history in detailed format." do
           file1, file2 = _prepare("file0632")
-          output, sout = main "history", "-F", "detailed"
+          output, sout = main "history", "-F", "fuller"
           ok {sout} == "[gi]$ git log --format=fuller\n"
           ok {output} =~ partial_regexp(<<~"END")
             commit {==\\h{40}==}
@@ -1236,9 +1236,9 @@ END
                 Initial commit (empty)
           END
         end
-        spec "option '-F compact' shows history in compact format." do
+        spec "option '-F oneline' shows history in compact format." do
           file1, file2 = _prepare("file5624")
-          output, sout = main "history", "-F", "compact"
+          output, sout = main "history", "-F", "oneline"
           ok {sout} == "[gi]$ git log --oneline\n"
           ok {output} =~ partial_regexp(<<~"END")
             {==\\h{7}==} add #{file2}

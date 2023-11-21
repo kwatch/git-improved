@@ -923,7 +923,7 @@ END
 
       @action.("show commit history in various format", important: true)
       @option.(:all, "-a, --all"   , "show history of all branches")
-      @option.(:format, "-F, --format=<format>", "default/compact/detailed/graph")
+      @option.(:format, "-F, --format=<format>", "default/oneline/fuller/graph")
       @option.(:author, "-u, --author", "show author name before '@' of email address (only for 'graph' format)")
       def show(*path, all: false, format: "default", author: false)
         opts = []
@@ -946,7 +946,9 @@ END
       HISTORY_SHOW_OPTIONS = {
         "default"  => nil,
         "compact"  => "--oneline",
+        "oneline"  => "--oneline",
         "detailed" => "--format=fuller",
+        "fuller"   => "--format=fuller",
         "graph"    => proc {|author: false, **_kws|
           fmt = GIT_CONFIG.history_graph_format
           fmt = fmt.sub(/ ?<?%a[eEnNlL]>? ?/, ' ') unless author
