@@ -1565,7 +1565,7 @@ __END__
 ##     Hello, world!
 ##
 
-module GitImproved
+GitImproved.module_eval do
 
 
   ##
