@@ -79,9 +79,9 @@ module GitImproved
   $ vi README.md                   # update an existing file
   $ gi stage .                     # add changes into staging area
   $ gi staged                      # show changes in staging area
-  $ gi cc -m "update README file"  # commit changes
-  $ gi repo:remote:origin github:yourname/mysample
-  $ gi up                          # upload local commits to remote repo
+  $ gi cc "update README file"     # commit changes
+  $ gi repo:remote:origin github:yourname/mysample   # set remote repo
+  $ gi push                        # upload local commits to remote repo
 END
       "Document:" => "  https://kwatch.github.io/git-improved/",
     }
