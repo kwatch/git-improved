@@ -824,8 +824,11 @@ END
 
       @action.("create a new commit", important: true)
       #@option.(:message, "-m, --message=<message>", "commit message")
-      def create(message=nil, *path)
-        opts = message && ! message.empty? ? ["-m", message] : []
+      @option.(:file, "-f, --file=<file>", "commit message file")
+      def create(message=nil, *path, file: nil)
+        opts = []
+        opts << "-m" << message if message && ! message.empty?
+        opts << "--file=#{file}" if file
         args = path.empty? ? [] : ["--", *path]
         git "commit", *opts, *args
       end
