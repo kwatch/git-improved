@@ -30,7 +30,7 @@ end
 module GitImproved
 
   VERSION = "$Version: 0.0.0 $".split()[1]
-  ENVVAR_STARTUP = "GI_STARTUP"
+  ENVVAR_INITFILE = "GI_INITFILE"
 
 
   class GitConfig
@@ -1449,16 +1449,16 @@ END
     ##
     category "misc:" do
 
-      @action.("generate a startup file, or print to stdout if no args",
+      @action.("generate a init file, or print to stdout if no args",
                usage: [
                  "<filename>     # generate a file",
                  "               # print to stdout",
                ])
-      def startupfile(filename=nil)
+      def initfile(filename=nil)
         str = File.read(__FILE__, encoding: "utf-8")
         code = str.split(/^__END__\n/, 2)[1]
         code = code.gsub(/%SCRIPT%/, APP_CONFIG.app_command)
-        code = code.gsub(/%ENVVAR_STARTUP%/, ENVVAR_STARTUP)
+        code = code.gsub(/%ENVVAR_INITFILE%/, ENVVAR_INITFILE)
         #
         if ! filename || filename == "-"
           print code
@@ -1516,7 +1516,7 @@ END
 
 
   def self.main(argv=ARGV)
-    errmsg = _load_setup_file(ENV[ENVVAR_STARTUP])
+    errmsg = _load_setup_file(ENV[ENVVAR_INITFILE])
     if errmsg
       $stderr.puts "\e[31m[ERROR]\e[0m #{errmsg}"
      return 1
@@ -1554,13 +1554,13 @@ __END__
 ##
 ## @(#) Setup file for '%SCRIPT%' command.
 ##
-## This file is loaded by '%SCRIPT%' command only if $%ENVVAR_STARTUP% is set,
+## This file is loaded by '%SCRIPT%' command only if $%ENVVAR_INITFILE% is set,
 ## for example:
 ##
 ##     $ gi hello
 ##     [ERROR] hello: Action not found.
 ##
-##     $ export %ENVVAR_STARTUP%="~/.gi_setup.rb"
+##     $ export %ENVVAR_INITFILE%="~/.gi_init.rb"
 ##     $ gi hello
 ##     Hello, world!
 ##
