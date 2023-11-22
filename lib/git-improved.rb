@@ -1516,7 +1516,7 @@ END
 
 
   def self.main(argv=ARGV)
-    errmsg = _load_setup_file(ENV[ENVVAR_INITFILE])
+    errmsg = _load_init_file(ENV[ENVVAR_INITFILE])
     if errmsg
       $stderr.puts "\e[31m[ERROR]\e[0m #{errmsg}"
      return 1
@@ -1528,15 +1528,15 @@ END
     return app.main(argv)
   end
 
-  def self._load_setup_file(filename)
+  def self._load_init_file(filename)
     return nil if filename == nil || filename.empty?
     filename = File.expand_path(filename)
     File.exist?(filename)  or
-      return "#{filename}: Setup file specified but not exist."
+      return "#{filename}: Init file specified but not exist."
     require File.absolute_path(filename)
     return nil
   end
-  private_class_method :_load_setup_file
+  private_class_method :_load_init_file
 
 
 end
@@ -1552,7 +1552,7 @@ __END__
 # frozen_string_literal: true
 
 ##
-## @(#) Setup file for '%SCRIPT%' command.
+## @(#) Init file for '%SCRIPT%' command.
 ##
 ## This file is loaded by '%SCRIPT%' command only if $%ENVVAR_INITFILE% is set,
 ## for example:
