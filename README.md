@@ -38,7 +38,6 @@ Links:
   * [Status](#status)
   * [Sync](#sync)
   * [Tag](#tag)
-* [Aliases](#aliases)
 * [License and Copyright](#license-and-copyright)
 
 <!-- /TOC -->
@@ -95,28 +94,31 @@ $ gi push                     # upload local commits to remote repo
 ```
 branch:checkout     : create a new local branch from a remote branch
 branch:create       : create a new branch, not switch to it
-                      (alias: branch)
 branch:current      : show current branch name
 branch:delete       : delete a branch
 branch:echo         : print CURR/PREV/PARENT branch name
 branch:fork         : create a new branch and switch to it
-                      (alias: fork)
 branch:join         : merge current branch into previous or other branch
-                      (alias: join)
 branch:list         : list branches
-                      (alias: branches)
 branch:merge        : merge previous or other branch into current branch
-                      (alias: merge)
 branch:parent       : show parent branch name (EXPERIMENTAL)
 branch:previous     : show previous branch name
 branch:rebase       : rebase (move) current branch on top of other branch
 branch:rename       : rename the current branch to other name
 branch:reset        : change commit-id of current HEAD
 branch:switch       : switch to previous or other branch
-                      (alias: sw, switch)
 branch:update       : git pull && git stash && git rebase && git stash pop
-                      (alias: update)
 branch:upstream     : print upstream repo name of current branch
+
+(Aliases)
+branch              : alias for 'branch:create'
+fork                : alias for 'branch:fork'
+join                : alias for 'branch:join'
+branches            : alias for 'branch:list'
+merge               : alias for 'branch:merge'
+sw                  : alias for 'branch:switch'
+switch              : alias for 'branch:switch'
+update              : alias for 'branch:update'
 ```
 
 
@@ -125,15 +127,18 @@ branch:upstream     : print upstream repo name of current branch
 ```
 commit:apply        : apply a commit to curr branch (known as 'cherry-pick')
 commit:correct      : correct the last commit
-                      (alias: correct)
 commit:create       : create a new commit
-                      (alias: cc, commit)
 commit:fixup        : correct the previous commit
-                      (alias: fixup)
 commit:revert       : create a new commit which reverts the target commit
 commit:rollback     : cancel recent commits up to the target commit-id
 commit:show         : show commits in current branch
-                      (alias: commits)
+
+(Aliases)
+correct             : alias for 'commit:correct'
+cc                  : alias for 'commit:create'
+commit              : alias for 'commit:create'
+fixup               : alias for 'commit:fixup'
+commits             : alias for 'commit:show'
 ```
 
 
@@ -151,16 +156,19 @@ config:setuser      : set user name and email
 ```
 file:blame          : print commit-id, author, and timestap of each line
 file:changes        : show changes of files
-                      (alias: changes)
 file:delete         : delete files or directories
 file:egrep          : find by pattern
 file:list           : list (un)tracked/ignored/missing files
-                      (alias: files)
 file:move           : move files into a directory
 file:rename         : rename a file or directory to new name
 file:restore        : restore files (= clear changes)
 file:track          : register files into the repository
-                      (alias: register, track)
+
+(Aliases)
+changes             : alias for 'file:changes'
+files               : alias for 'file:list'
+register            : alias for 'file:track'
+track               : alias for 'file:track'
 ```
 
 
@@ -175,13 +183,15 @@ help                : print help message (of action if specified)
 
 ```
 history             : show commit history in various format
-                      (alias: hist (with '-F graph'))
 history:edit:cancel : cancel (or abort) `git rebase -i`
 history:edit:resume : resume (= conitnue) suspended `git rebase -i`
 history:edit:skip   : skip current commit and resume
 history:edit:start  : start `git rebase -i` to edit commit history
-                      (alias: histedit)
 history:notuploaded : show commits not uploaded yet
+
+(Aliases)
+hist                : alias for 'history -F graph'
+histedit            : alias for 'history:edit:start'
 ```
 
 
@@ -207,12 +217,15 @@ repo:remote:origin  : get/set/delete origin (= default remote repository)
 
 ```
 staging:add         : add changes of files into staging area
-                      (alias: pick (with '-p'), stage)
 staging:clear       : delete all changes in staging area
-                      (alias: unstage)
 staging:edit        : edit changes in staging area
 staging:show        : show changes in staging area
-                      (alias: staged)
+
+(Aliases)
+pick                : alias for 'staging:add -p'
+stage               : alias for 'staging:add'
+unstage             : alias for 'staging:clear'
+staged              : alias for 'staging:show'
 ```
 
 
@@ -224,6 +237,9 @@ stash:list          : list stash history
 stash:pop           : restore latest changes from stash
 stash:put           : save current changes into stash
 stash:show          : show changes on stash
+
+(Aliases)
+status              : alias for 'status:compact'
 ```
 
 
@@ -231,10 +247,12 @@ stash:show          : show changes on stash
 
 ```
 status:compact      : show status in compact format
-                      (alias: status)
 status:default      : show status in default format
 status:here         : same as 'stats:compact .'
 status:info         : show various infomation of current status
+
+(Aliases)
+status              : alias for 'status:compact'
 ```
 
 
@@ -242,11 +260,17 @@ status:info         : show various infomation of current status
 
 ```
 sync:both           : download and upload commits
-                      (alias: sync)
 sync:pull           : download commits from remote and apply them to local
-                      (alias: dl, download, pull)
 sync:push           : upload commits to remote
-                      (alias: push, up, upload)
+
+(Aliases)
+sync                : alias for 'sync:both'
+dl                  : alias for 'sync:pull'
+download            : alias for 'sync:pull'
+pull                : alias for 'sync:pull'
+push                : alias for 'sync:push'
+up                  : alias for 'sync:push'
+upload              : alias for 'sync:push'
 ```
 
 
@@ -258,45 +282,9 @@ tag:create          : create a new tag
 tag:delete          : delete a tag
 tag:download        : download tags
 tag:list            : list tags
-                      (alias: tags)
 tag:upload          : upload tags
-```
 
-
-## Aliases
-
-```
-branch              : alias for 'branch:create'
-fork                : alias for 'branch:fork'
-join                : alias for 'branch:join'
-branches            : alias for 'branch:list'
-merge               : alias for 'branch:merge'
-sw                  : alias for 'branch:switch'
-switch              : alias for 'branch:switch'
-update              : alias for 'branch:update'
-correct             : alias for 'commit:correct'
-cc                  : alias for 'commit:create'
-commit              : alias for 'commit:create'
-fixup               : alias for 'commit:fixup'
-commits             : alias for 'commit:show'
-changes             : alias for 'file:changes'
-files               : alias for 'file:list'
-register            : alias for 'file:track'
-track               : alias for 'file:track'
-hist                : alias for 'history -F graph'
-histedit            : alias for 'history:edit:start'
-pick                : alias for 'staging:add -p'
-stage               : alias for 'staging:add'
-unstage             : alias for 'staging:clear'
-staged              : alias for 'staging:show'
-status              : alias for 'status:compact'
-sync                : alias for 'sync:both'
-dl                  : alias for 'sync:pull'
-download            : alias for 'sync:pull'
-pull                : alias for 'sync:pull'
-push                : alias for 'sync:push'
-up                  : alias for 'sync:push'
-upload              : alias for 'sync:push'
+(Aliases)
 tags                : alias for 'tag:list'
 ```
 
