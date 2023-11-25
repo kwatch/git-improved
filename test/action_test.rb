@@ -1292,7 +1292,7 @@ END
       end
 
       topic 'history:edit:start' do
-        spec "start `git rebase -i` to edit commit history", tag: "curr" do
+        spec "start `git rebase -i` to edit commit history" do
           ## TODO
           dryrun_mode do
             _, sout = main "history:edit:start", "-n2"
@@ -1885,31 +1885,29 @@ no changes added to commit (use "git add" and/or "git commit -a")
         end
       end
 
-      ##--
-      #topic 'tag:create' do
-      #  spec "create a new tag" do
-      #    tag = "tg6740"
-      #    output, sout = main "tag:create", tag
-      #    ok {sout} == "[gi]$ git tag #{tag}\n"
-      #    ok {output} == ""
-      #    ok {`git tag --list`} == <<~"END"
-      #      #{tag}
-      #    END
-      #  end
-      #end
-      #
-      #topic 'tag:delete' do
-      #  spec "delete a tag" do
-      #    tag = "tg6988"
-      #    system! "git tag #{tag}"
-      #    ok {`git tag --list`}.include?(tag)
-      #    output, sout = main "tag:delete", tag
-      #    ok {sout} == "[gi]$ git tag -d tg6988\n"
-      #    ok {output} =~ /\ADeleted tag '#{tag}' \(was \h{7}\)\n\z/
-      #    ok {`git tag --list`}.NOT.include?(tag)
-      #  end
-      #end
-      ##++
+      topic 'tag:create' do
+        spec "create a new tag" do
+          tag = "tg6740"
+          output, sout = main "tag:create", tag
+          ok {sout} == "[gi]$ git tag #{tag}\n"
+          ok {output} == ""
+          ok {`git tag --list`} == <<~"END"
+            #{tag}
+          END
+        end
+      end
+
+      topic 'tag:delete' do
+        spec "delete a tag" do
+          tag = "tg6988"
+          system! "git tag #{tag}"
+          ok {`git tag --list`}.include?(tag)
+          output, sout = main "tag:delete", tag
+          ok {sout} == "[gi]$ git tag -d tg6988\n"
+          ok {output} =~ /\ADeleted tag '#{tag}' \(was \h{7}\)\n\z/
+          ok {`git tag --list`}.NOT.include?(tag)
+        end
+      end
 
       topic 'tag:list' do
         spec "list tags" do
