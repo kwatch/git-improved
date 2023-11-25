@@ -1177,7 +1177,7 @@ END
         end
       end
 
-      @action.("list tags", hidden: true)
+      @action.("list tags")
       @option.(:remote, "-r, --remote", "list remote tags")
       def list(remote: false)
         if remote
