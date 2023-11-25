@@ -19,7 +19,29 @@ Links:
 
 ### Table of Contents
 
-<!-- TOC/ -->
+<!-- TOC -->
+
+* [What's This?](#whats-this)
+* [Install](#install)
+* [Quick Example](#quick-example)
+* [Actions](#actions)
+  * [Branch](#branch)
+  * [Commit](#commit)
+  * [Config](#config)
+  * [File](#file)
+  * [Help](#help)
+  * [History](#history)
+  * [Misc](#misc)
+  * [Repo](#repo)
+  * [Staging](#staging)
+  * [Stash](#stash)
+  * [Status](#status)
+  * [Sync](#sync)
+  * [Tag](#tag)
+* [Aliases](#aliases)
+* [License and Copyright](#license-and-copyright)
+
+<!-- /TOC -->
 
 
 ## Install
