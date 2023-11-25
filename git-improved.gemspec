@@ -19,7 +19,7 @@ END
                            "README.md", "MIT-LICENSE", "CHANGES.md",
                            "#{spec.name}.gemspec",
                            "lib/**/*.rb", "test/**/*.rb", "bin/*",
-                           "doc/*.html", "doc/css/*.css",
+                          #"doc/*.html", "doc/css/*.css",
                          ]
   spec.executables     = ["gi"]
   spec.bindir          = "bin"
