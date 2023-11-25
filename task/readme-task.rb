@@ -25,8 +25,11 @@ namespace :readme do
 
   def do_readme_retrieve()
     dir = README_DESTDIR
-    rm_rf dir if File.exist?(dir)
-    mkdir_p dir
+    if File.exist?(dir)
+      rm_rf "#{dir}/*"
+    else
+      mkdir_p dir
+    end
     s = File.read(README_FILE, encoding: 'utf-8')
     filename = nil
     buf = nil
@@ -74,6 +77,38 @@ namespace :readme do
     end
   end
 
+
+  desc "usage: rake increment range=1..10 add=+1"
+  task :increment do
+    range = ENV['range']  or raise "Arugment 'range=...' required."
+    add   = ENV['add']    or raise "Argument 'add=...' required."
+    range =~ /\A\d+\.\.\.?\d+\z/  or raise "#{range}: invalid range."
+    add   =~ /\A[-+]\d+\z/        or raise "#{add}: invalid add."
+    range = eval range
+    add   = eval add
+    Dir.glob("doc/*.mdx").each do |filename|
+      File.open(filename, 'r+', encoding: 'utf-8') do |f|
+        s1 = f.read()
+        s2 = s1.gsub(/\b(ex)(\d+)(\.\w+)/) {
+          x = $2
+          n = x.to_i
+          w = x.length
+          if range === n
+            n_s = "%0#{w}d" % (n + add)
+            puts "* #{$1}#{x}#{$3} -> #{$1}#{n_s}#{$3}"
+            "#{$1}#{n_s}#{$3}"
+          else
+            $&
+          end
+        }
+        if s1 != s2
+          f.rewind()
+          f.truncate(0)
+          f.write(s2)
+        end
+      end
+    end
+  end
 
   desc "builds table of contents"
   task :toc do

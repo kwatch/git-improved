@@ -22,12 +22,17 @@ end unless Rake::Task.task_defined?(:default)
 
 desc "create 'README.md' and 'doc/*.html'"
 task :doc do
+  do_doc()
+end
+
+def do_doc()
   x = PROJECT
   cd "doc" do
     sh "../../docs/md2 --md #{x}.mdx > ../README.md"
     sh "../../docs/md2 #{x}.mdx > #{x}.html"
   end
 end
+
 
 desc "copy 'doc/*.html' to '../docs/'"
 task 'doc:export' do
