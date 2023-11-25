@@ -14,7 +14,7 @@ Links:
 
 * Document: <https://kwatch.github.io/git-improved/>
 * GitHub: <https://github.com/kwatch/git-improved>
-* Changes: <https://github.com/kwatch/git-improved/CHANGES.md>
+* Changes: <https://github.com/kwatch/git-improved/blob/main/CHANGES.md>
 
 
 ### Table of Contents
