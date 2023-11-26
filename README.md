@@ -10,6 +10,9 @@ It provides a much better interface than Git.
 * Easy to understand
 * Fewer commands
 
+GitImproved is also an example program of [Benry-CmdApp](https://kwatch.github.io/benry-ruby/benry-cmdapp.html) framework.
+Benry-CmdApp is a framework for commad-line applications which take sub-commands, like `git`, `docker`, or `npm`.
+
 Links:
 
 * Document: <https://kwatch.github.io/git-improved/>
