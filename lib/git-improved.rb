@@ -722,10 +722,16 @@ END
       end
 
       @action.("rename a file or directory to new name")
-      def rename(old_file, new_file)
-        ! File.exist?(new_file)  or
-          raise action_failed("#{new_file}: Already exist.")
-        git "mv", old_file, new_file
+      @option.(:force, "-f, --force", "rename even if new file or dir exists")
+      def rename(old_file, new_file, force: false)
+        opts = []
+        if force
+          opts << "-f"
+        else
+          ! File.exist?(new_file)  or
+            raise action_error("#{new_file}: Already exist.")
+        end
+        git "mv", *opts, old_file, new_file
       end
 
       @action.("delete files or directories")
