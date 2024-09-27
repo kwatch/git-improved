@@ -759,6 +759,51 @@ END
         git "mv", *opts, old_file, new_file
       end
 
+      @action.("rename multiple files by pattern")
+      @option.(:force, "-f, --force", "rename even if new file or dir exists")
+      def rename__all(old_pattern, new_pattern, file, *file_, force: false)
+        opts = []
+        if opts
+          opts << "-f"
+        end
+        files = [file, *file_]
+        ! files.empty?  or
+          raise action_error("No files nor directories.")
+        #
+        begin
+          old_rexp = Regexp.compile(old_pattern)
+        rescue => exc
+          raise action_error("#{old_pattern}: Invalid regular expression.")
+        end
+        #
+        pairs = []
+        files.each do |old_file|
+          new_file = old_file.gsub(old_rexp, new_pattern)
+          pairs << [old_file, new_file]
+          puts "#{old_file} => #{new_file}"
+          new_file != old_file  or
+            raise action_error("#{new_file}: New name is same as old name.")
+          force || ! File.exist?(new_file)  or
+            raise action_error("#{new_file}: Already exist.")
+        end
+        #
+        puts ""
+        print "Are you sure to rename above files? [Y/n]: "
+        answer_yes = (
+          case $stdin.gets.strip()
+          when ""     ; true
+          when /\Ay/i ; true
+          when /\An/i ; false
+          else        ; false
+          end
+        )
+        return unless answer_yes
+        #
+        pairs.each do |old_file, new_file|
+          git "mv", *opts, old_file, new_file
+        end
+      end
+
       @action.("delete files or directories")
       @option.(:recursive, "-r, --recursive", "delete files recursively.")
       @option.(:force    , "-f, --force"    , "delete files forcedly.")

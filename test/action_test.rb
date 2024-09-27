@@ -1082,6 +1082,34 @@ Oktest.scope do
         end
       end
 
+      topic 'file:rename:all' do
+        spec "rename multiple files by pattern" do
+          file = "file5190"
+          dummy_file(file+"a.tmp", "A\n")
+          dummy_file(file+"b.tmp", "B\n")
+          at_end { Dir.glob(file+"*.*").each {|x| File.unlink(x) } }
+          system! "git add #{file}a.tmp #{file}b.tmp"
+          system! "git commit -q -m 'add files'"
+          #
+          ok {file+"a.tmp"}.file_exist?
+          ok {file+"b.tmp"}.file_exist?
+          ok {file+"a.txt"}.not_exist?
+          ok {file+"b.txt"}.not_exist?
+          output, sout = main "file:rename:all", '\.tmp$', '.txt', file+"a.tmp", file+"b.tmp", stdin: "y"
+          ok {file+"a.tmp"}.not_exist?
+          ok {file+"b.tmp"}.not_exist?
+          ok {file+"a.txt"}.file_exist?
+          ok {file+"b.txt"}.file_exist?
+          ok {sout} == "file5190a.tmp => file5190a.txt\n"\
+                       "file5190b.tmp => file5190b.txt\n"\
+                       "\n"\
+                       "Are you sure to rename above files? [Y/n]: "\
+                       "[gi]$ git mv -f file5190a.tmp file5190a.txt\n"\
+                       "[gi]$ git mv -f file5190b.tmp file5190b.txt\n"
+          ok {output} == ""
+        end
+      end
+
       topic 'file:restore' do
         before do
           system! "git reset -q --hard HEAD"
