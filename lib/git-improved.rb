@@ -736,9 +736,12 @@ END
 
       @action.("delete files or directories")
       @option.(:recursive, "-r, --recursive", "delete files recursively.")
-      def delete(file, *file2, recursive: false)
+      @option.(:force    , "-f, --force"    , "delete files forcedly.")
+      def delete(file, *file2, recursive: false, force: false)
         files = [file] + file2
-        opts = recursive ? ["-r"] : []
+        opts = []
+        opts << "-r" if recursive
+        opts << "-f" if force
         git "rm", *opts, *files
       end
 
