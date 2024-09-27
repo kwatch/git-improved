@@ -684,13 +684,21 @@ END
       @action.("register files into the repository", important: true)
       @option.(:force, "-f, --force", "allow to track ignored files")
       @option.(:recursive, "-r, --recursive", "track files under directories")
+      @option.(:autoskip, "-s, --autoskip", "skip already tracked files")
       #@option.(:allow_empty_dir, "-e, --allow-empty-dir", "create '.gitkeep' to track empty directory")
-      def track(file, *file2, force: false, recursive: false)
+      def track(file, *file2, force: false, recursive: false, autoskip: false)
         files = [file] + file2
-        files.each do |x|
+        tracked_files, untracked_files = files.partition {|x|
           output = `git ls-files -- #{x}`
-          output.empty?  or
-            raise action_error("#{x}: Already tracked.")
+          ! output.empty?
+        }
+        if autoskip
+          ! untracked_files.empty?  or
+            raise action_error("Missing untracked files.")
+          files = untracked_files
+        else
+          tracked_files.empty?  or
+            raise action_error("#{tracked_files[0]}: Already tracked.")
         end
         files.each do |x|
           if File.symlink?(x)
