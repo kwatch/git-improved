@@ -693,7 +693,9 @@ END
             raise action_error("#{x}: Already tracked.")
         end
         files.each do |x|
-          if File.directory?(x)
+          if File.symlink?(x)
+            # ok
+          elsif File.directory?(x)
             recursive  or
               raise action_error("#{x}: File expected, but is a directory (specify `-r` or `--recursive` otpion to track files under the directory).")
           end
