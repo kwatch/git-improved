@@ -207,6 +207,21 @@ END
       return remote
     end
 
+    def merge_commit?(commit)
+      ## ref: https://stackoverflow.com/questions/3824050/
+      #output = `git cat-file -p #{commit}`
+      #header = output.split(/\n\n/)[0]
+      #parent_commits = header.scan(/^parent (.*)/).flatten()
+      #return parent_commits.length > 1
+      output = `git show -s --format=%p #{commit}`
+      return output.split().length > 1
+    end
+
+    def changes_exist?()
+      output = `git status -s -uno`
+      return ! output.strip().empty?
+    end
+
     def color_mode?
       return $stdout.tty?
     end
@@ -934,6 +949,19 @@ END
         end
       end
 
+      @action.("rollback merge commit")
+      def unmerge()
+        #; [!8aa2p] fails if HEAD is not a merge commit.
+        merge_commit?("HEAD")  or
+          raise action_error("HEAD is not a merge commit.")
+        #; [!qfo66] fails if any changed files exist.
+        ! changes_exist?()  or
+          raise action_error("There are changes not committed yet."\
+                             " Put them into stash before unmerging.")
+        #; [!mtaem] rollback merge commit
+        run_once "commit:rollback", restore: true
+      end
+
     end
 
     define_alias("commit"  , "commit:create")
@@ -942,6 +970,7 @@ END
     define_alias("fixup"   , "commit:fixup")
     define_alias("commits" , "commit:show")
    #define_alias("rollback", "commit:rollback")
+    define_alias("unmerge" , "commit:unmerge")
 
 
     ##

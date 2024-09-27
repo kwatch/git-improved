@@ -84,6 +84,11 @@ Oktest.global_scope do
     return `git branch --show-current`.strip()
   end
 
+  def get_commit_id(name="HEAD", width: 7)
+    commit_id = `git rev-parse #{name}`.strip()
+    return commit_id[0...width]
+  end
+
   def _reset_all_commits()
     system! "git reset -q --hard #{$initial_commit_id}"
   end

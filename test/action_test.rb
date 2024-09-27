@@ -747,6 +747,55 @@ Oktest.scope do
         end
       end
 
+      topic 'commit:unmerge' do
+        def _prepare(n)
+          file = "file#{n}.tmp"
+          writefile(file, "A\n")
+          system! "git stage ."
+          system! "git commit -qm 'commit A'"
+          cid1 = get_commit_id("HEAD")
+          system! "git checkout -q -b b#{n}"
+          writefile(file, "AA\n")
+          system! "git stage ."
+          system! "git commit -qm 'commit B'"
+          system! "git checkout -q -"
+          system! "git merge -q -m 'ok' --no-ff b#{n}"
+          cid2 = get_commit_id("HEAD")
+          ok {cid2} != cid1
+          return cid1, cid2
+        end
+        spec "[!mtaem] rollback merge commit" do
+          cid1, cid2 = _prepare("4963")
+          output, sout = main "commit:unmerge"
+          cid3 = get_commit_id("HEAD")
+          ok {cid3} != cid2
+          ok {cid3} == cid1
+          ok {sout} == "[gi]$ git reset --hard HEAD^\n"
+          ok {output} == "HEAD is now at #{cid1} commit A\n"
+        end
+        spec "[!8aa2p] fails if HEAD is not a merge commit." do
+          _prepare("6033")
+          main "commit:unmerge"
+          output, sout, serr, status = main! "commit:unmerge"
+          ok {output} == ""
+          ok {sout}   == ""
+          ok {status} == 1
+          ok {serr}   != ""
+          ok {serr.split("\n").first} == "[ERROR] HEAD is not a merge commit."
+        end
+        spec "[!qfo66] fails if any changed files exist." do
+          _prepare("5014")
+          file = "file5014.tmp"
+          writefile(file, "B\n")
+          output, sout, serr, status = main! "commit:unmerge"
+          ok {output} == ""
+          ok {sout}   == ""
+          ok {status} == 1
+          ok {serr}   != ""
+          ok {serr.split("\n").first} == "[ERROR] There are changes not committed yet. Put them into stash before unmerging."
+        end
+      end
+
     }
 
 
