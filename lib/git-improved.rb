@@ -629,10 +629,11 @@ END
     ##
     category "file:" do
 
-      @action.("list (un)tracked/ignored/missing files")
+      @action.("list (un)tracked/changed/ignored/missing files")
       @option.(:filtertype, "-F <filtertype>", "one of:", detail: <<~END)
                               - tracked   : tracked files only (default)
                               - untracked : not-tracked files only
+                              - changed   : changed files only
                               - ignored   : ignored files by '.gitignore'
                               - missing   : tracked but missing files
                             END
@@ -658,6 +659,11 @@ END
         echoback "git status -s#{opt} #{path} | grep '^?? '"
         output = `git status -s#{opt} #{path}`
         puts output.each_line().grep(/^\?\? /)
+      end
+
+      def __file__list__changed(path, full)
+        paths = path ? [path] : []
+        git "status", "-s", "-uno", *paths
       end
 
       def __file__list__ignored(path, full)

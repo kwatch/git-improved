@@ -926,7 +926,7 @@ Oktest.scope do
         before do
           _reset_all_commits()
         end
-        spec "list (un)tracked/ignored/missing files" do
+        spec "list (un)tracked/changed/ignored/missing files" do
           file1 = "file1154.txt"
           file2 = "file1154.css"
           file3 = "file1154.json"
@@ -938,6 +938,7 @@ Oktest.scope do
           system! "git add #{file1}"
           system! "git add #{file2}"
           system! "git commit -q -m 'add #{file1} and #{file2}'"
+          writefile(file2, "BB\n")
           writefile(".gitignore", "*~\n")
           at_end { rm_rf ".gitignore" }
           ## tracked
@@ -955,6 +956,12 @@ Oktest.scope do
             ?? file1154.json
           END
           ok {output} == ""
+          ## changed
+          output, sout = main "file:list", "-F", "changed"
+          ok {sout} == <<~'END'
+            [gi]$ git status -s -uno .
+          END
+          ok {output} == " M file1154.css\n"
           ## ignored
           output, sout = main "file:list", "-F", "ignored"
           ok {sout} == <<~'END'
