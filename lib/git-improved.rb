@@ -631,8 +631,8 @@ END
 
       @action.("list (un)tracked/ignored/missing files")
       @option.(:filtertype, "-F <filtertype>", "one of:", detail: <<~END)
-                              - tracked   : only tracked files (default)
-                              - untracked : only not-tracked files
+                              - tracked   : tracked files only (default)
+                              - untracked : not-tracked files only
                               - ignored   : ignored files by '.gitignore'
                               - missing   : tracked but missing files
                             END
