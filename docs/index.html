@@ -28,10 +28,93 @@ It provides a much better interface than Git.</p>
 <ul>
 <li>Intuitive</li>
 <li>Easy to understand</li>
-<li>Fewer commands</li>
+<li>Categorized commands</li>
 </ul>
+<p>Command comparison:</p>
+<table>
+<tbody>
+<tr>
+<td>Git Improved</td><td>Git</td>
+</tr>
+<tr>
+<td>-------------------</td><td>-----------------------------------</td>
+</tr>
+<tr>
+<td>gi</td><td>git status -sb .</td>
+</tr>
+<tr>
+<td>gi sw &ltbranch&gt;</td><td>git checkout &ltbranch&gt;</td>
+</tr>
+<tr>
+<td>gi fork &ltbranch&gt;</td><td>git checkout -b &ltbranch&gt;</td>
+</tr>
+<tr>
+<td>gi join</td><td>git checkout -; git merge &ltbranch&gt;</td>
+</tr>
+<tr>
+<td>gi pick .</td><td>git add -i .</td>
+</tr>
+<tr>
+<td>gi track &ltnewfile&gt;</td><td>git add &ltnewfile&gt;</td>
+</tr>
+<tr>
+<td>gi stage &ltfile&gt;</td><td>git add &ltfile&gt;</td>
+</tr>
+<tr>
+<td>gi staged</td><td>git diff --cached</td>
+</tr>
+<tr>
+<td>gi unstage</td><td>git reset HEAD</td>
+</tr>
+<tr>
+<td>gi commit:rollback</td><td>git reset HEAD^</td>
+</tr>
+<tr>
+<td>gi file:restore</td><td>git reset --hard</td>
+</tr>
+<tr>
+<td>gi cc "&ltcomment&gt;"</td><td>git commit -m "&ltcomment&gt;"</td>
+</tr>
+<tr>
+<td>gi correct</td><td>git commit --ammend</td>
+</tr>
+<tr>
+<td>gi fixup &ltcommit&gt;</td><td>git commit --fixup=&ltcommit&gt;</td>
+</tr>
+<tr>
+<td>gi changes</td><td>git diff</td>
+</tr>
+<tr>
+<td>gi branches</td><td>git branch -a</td>
+</tr>
+<tr>
+<td>gi commits</td><td>git log -p</td>
+</tr>
+<tr>
+<td>gi tags</td><td>git tag -l</td>
+</tr>
+<tr>
+<td>gi tag:upload</td><td>git push --tags</td>
+</tr>
+<tr>
+<td>gi hist</td><td>git git log --oneline --graph ...</td>
+</tr>
+<tr>
+<td>gi histedit</td><td>git rebase -i</td>
+</tr>
+<tr>
+<td>gi histedit:resume</td><td>git rebase --continue</td>
+</tr>
+<tr>
+<td>gi histedit:cancel</td><td>git rebase --abort</td>
+</tr>
+<tr>
+<td>...(and more)...</td><td>....</td>
+</tr>
+</tbody>
+</table>
 <p>GitImproved is also an example program of <a href="https://kwatch.github.io/benry-ruby/benry-cmdapp.html">Benry-CmdApp</a> framework.
-Benry-CmdApp is a framework for commad-line applications which take sub-commands, like <code>git</code>, <code>docker</code>, or <code>npm</code>.</p>
+Benry-CmdApp is a framework for commad-line applications which take sub-commands (like <code>git</code>, <code>docker</code>, <code>npm</code>, etc).</p>
 <p>Links:</p>
 <ul>
 <li>Document: <a href="https://kwatch.github.io/git-improved/">https://kwatch.github.io/git-improved/</a></li>
@@ -61,6 +144,7 @@ Benry-CmdApp is a framework for commad-line applications which take sub-commands
 <li><a href="#sync">Sync</a></li>
 <li><a href="#tag">Tag</a></li>
 </ul></li>
+<li><a href="#customizing-configurations">Customizing Configurations</a></li>
 <li><a href="#license-and-copyright">License and Copyright</a></li>
 </ul>
 </div>
@@ -72,7 +156,7 @@ Benry-CmdApp is a framework for commad-line applications which take sub-commands
 <pre class="language-console">
 $ gem install git-improved
 $ gi --version
-1.0.0
+0.2.0
 </pre>
 </section>
 <section class="section" id="quick-example">
@@ -81,6 +165,8 @@ $ gi --version
 ## help
 $ gi -h | less                # help message
 $ gi -l | less                # list actions
+$ gi :                        # list top-level categories of actions
+$ gi commit:                  # list actions under 'commit' category
 $ gi -h commit:create         # help of an action
 
 ## create a repo
@@ -103,7 +189,7 @@ $ gi cc "update README file"  # commit changes
 
 ## upload changes
 $ gi repo:remote:seturl github:yourname/mysample
-$ gi push                     # upload local commits to remote repo
+$ gi upload                   # upload local commits to remote repo
 </pre>
 </section>
 <section class="section" id="actions">
@@ -111,190 +197,227 @@ $ gi push                     # upload local commits to remote repo
 <section class="subsection" id="branch">
 <h3>Branch</h3>
 <pre>
-branch:checkout     : create a new local branch from a remote branch
-branch:create       : create a new branch, not switch to it
-branch:current      : show current branch name
-branch:delete       : delete a branch
-branch:echo         : print CURR/PREV/PARENT branch name
-branch:fork         : create a new branch and switch to it
-branch:join         : merge current branch into previous or other branch
-branch:list         : list branches
-branch:merge        : merge previous or other branch into current branch
-branch:parent       : show parent branch name (EXPERIMENTAL)
-branch:previous     : show previous branch name
-branch:rebase       : rebase (move) current branch on top of other branch
-branch:rename       : rename the current branch to other name
-branch:reset        : change commit-id of current HEAD
-branch:switch       : switch to previous or other branch
-branch:update       : git pull &amp;&amp; git stash &amp;&amp; git rebase &amp;&amp; git stash pop
-branch:upstream     : print upstream repo name of current branch
+$ gi branch:
+Actions:
+  branch:checkout     : create a new local branch from a remote branch
+  branch:create       : create a new branch, not switch to it
+  branch:current      : show current branch name
+  branch:delete       : delete a branch
+  branch:echo         : print CURR/PREV/PARENT branch name
+  branch:fork         : create a new branch and switch to it
+  branch:join         : merge current branch into previous or other branch
+  branch:list         : list branches
+  branch:merge        : merge previous or other branch into current branch
+  branch:parent       : show parent branch name (EXPERIMENTAL)
+  branch:previous     : show previous branch name
+  branch:rebase       : rebase (move) current branch on top of other branch
+  branch:rename       : rename the current branch to other name
+  branch:reset        : change commit-id of current HEAD
+  branch:switch       : switch to previous or other branch
+  branch:update       : git pull &amp;&amp; git stash &amp;&amp; git rebase &amp;&amp; git stash pop
+  branch:upstream     : print upstream repo name of current branch
 
-(Aliases)
-branch              : alias for 'branch:create'
-fork                : alias for 'branch:fork'
-join                : alias for 'branch:join'
-branches            : alias for 'branch:list'
-merge               : alias for 'branch:merge'
-sw                  : alias for 'branch:switch'
-switch              : alias for 'branch:switch'
-update              : alias for 'branch:update'
+Aliases:
+  branch              : alias for 'branch:create'
+  fork                : alias for 'branch:fork'
+  join                : alias for 'branch:join'
+  branches            : alias for 'branch:list'
+  merge               : alias for 'branch:merge'
+  sw                  : alias for 'branch:switch'
+  switch              : alias for 'branch:switch'
+  update              : alias for 'branch:update'
 </pre>
 </section>
 <section class="subsection" id="commit">
 <h3>Commit</h3>
 <pre>
-commit:apply        : apply a commit to curr branch (known as 'cherry-pick')
-commit:correct      : correct the last commit
-commit:create       : create a new commit
-commit:fixup        : correct the previous commit
-commit:revert       : create a new commit which reverts the target commit
-commit:rollback     : cancel recent commits up to the target commit-id
-commit:show         : show commits in current branch
+$ gi commit:
+Actions:
+  commit:apply        : apply a commit to curr branch (known as 'cherry-pick')
+  commit:correct      : correct the last commit
+  commit:create       : create a new commit
+  commit:fixup        : correct the previous commit
+  commit:revert       : create a new commit which reverts the target commit
+  commit:rollback     : cancel recent commits up to the target commit-id
+  commit:show         : show commits in current branch
+  commit:unmerge      : rollback merge commit
 
-(Aliases)
-correct             : alias for 'commit:correct'
-cc                  : alias for 'commit:create'
-commit              : alias for 'commit:create'
-fixup               : alias for 'commit:fixup'
-commits             : alias for 'commit:show'
+Aliases:
+  correct             : alias for 'commit:correct'
+  cc                  : alias for 'commit:create'
+  commit              : alias for 'commit:create'
+  fixup               : alias for 'commit:fixup'
+  commits             : alias for 'commit:show'
+  unmerge             : alias for 'commit:unmerge'
 </pre>
 </section>
 <section class="subsection" id="config">
 <h3>Config</h3>
 <pre>
-config              : list/get/set/delete config values
-config:alias        : list/get/set/delete aliases of 'git' (not of 'gi')
-config:setuser      : set user name and email
+$ gi config:
+Actions:
+  config              : list/get/set/delete config values
+  config:alias        : list/get/set/delete aliases of 'git' (not of 'gi')
+  config:setuser      : set user name and email
 </pre>
 </section>
 <section class="subsection" id="file">
 <h3>File</h3>
 <pre>
-file:blame          : print commit-id, author, and timestap of each line
-file:changes        : show changes of files
-file:delete         : delete files or directories
-file:egrep          : find by pattern
-file:list           : list (un)tracked/ignored/missing files
-file:move           : move files into a directory
-file:rename         : rename a file or directory to new name
-file:restore        : restore files (= clear changes)
-file:track          : register files into the repository
+$ gi file:
+Actions:
+  file:blame          : print commit-id, author, and timestap of each line
+  file:changes        : show changes of files
+  file:delete         : delete files or directories
+  file:egrep          : find by pattern
+  file:list           : list (un)tracked/changed/ignored/missing files
+  file:move           : move files into a directory
+  file:rename         : rename a file or directory to new name
+  file:rename:all     : rename multi files by pattern
+  file:restore        : restore files (= clear changes)
+  file:track          : register files into the repository
 
-(Aliases)
-changes             : alias for 'file:changes'
-files               : alias for 'file:list'
-register            : alias for 'file:track'
-track               : alias for 'file:track'
+Aliases:
+  changes             : alias for 'file:changes'
+  files               : alias for 'file:list'
+  register            : alias for 'file:track'
+  track               : alias for 'file:track'
 </pre>
 </section>
 <section class="subsection" id="help">
 <h3>Help</h3>
 <pre>
-help                : print help message (of action if specified)
+$ gi help:
+Actions:
+  help                : print help message (of action if specified)
 </pre>
 </section>
 <section class="subsection" id="history">
 <h3>History</h3>
 <pre>
-history             : show commit history in various format
-history:edit:cancel : cancel (or abort) `git rebase -i`
-history:edit:resume : resume (= conitnue) suspended `git rebase -i`
-history:edit:skip   : skip current commit and resume
-history:edit:start  : start `git rebase -i` to edit commit history
-history:notuploaded : show commits not uploaded yet
+$ gi history:
+Actions:
+  history             : show commit history in various format
+  history:edit:cancel : cancel (or abort) `git rebase -i`
+  history:edit:resume : resume (= conitnue) suspended `git rebase -i`
+  history:edit:skip   : skip current commit and resume
+  history:edit:start  : start `git rebase -i` to edit commit history
+  history:notuploaded : show commits not uploaded yet
 
-(Aliases)
-hist                : alias for 'history -F graph'
-histedit            : alias for 'history:edit:start'
+Aliases:
+  hist                : alias for 'history -F graph'
+  histedit            : alias for 'history:edit:start'
 </pre>
 </section>
 <section class="subsection" id="misc">
 <h3>Misc</h3>
 <pre>
-misc:initfile       : generate a init file, or print to stdout if no args
+$ gi misc:
+Actions:
+  misc:initfile       : generate a init file, or print to stdout if no args
 </pre>
 </section>
 <section class="subsection" id="repo">
 <h3>Repo</h3>
 <pre>
-repo:clone          : copy a repository ('github:&ltuser&gt;/&ltrepo&gt;' is available)
-repo:create         : create a new directory and initialize it as a git repo
-repo:init           : initialize git repository with empty initial commit
-repo:remote         : list/get/set/delete remote repository
-repo:remote:origin  : get/set/delete origin (= default remote repository)
+$ gi repo:
+Actions:
+  repo:clone          : copy a repository ('github:&ltuser&gt;/&ltrepo&gt;' is available)
+  repo:create         : create a new directory and initialize it as a git repo
+  repo:init           : initialize git repository with empty initial commit
+  repo:remote         : list/get/set/delete remote repository
+  repo:remote:origin  : get/set/delete origin (= default remote repository)
 </pre>
 </section>
 <section class="subsection" id="staging">
 <h3>Staging</h3>
 <pre>
-staging:add         : add changes of files into staging area
-staging:clear       : delete all changes in staging area
-staging:edit        : edit changes in staging area
-staging:show        : show changes in staging area
+$ gi staging:
+Actions:
+  staging:add         : add changes of files into staging area
+  staging:clear       : delete all changes in staging area
+  staging:edit        : edit changes in staging area
+  staging:show        : show changes in staging area
 
-(Aliases)
-pick                : alias for 'staging:add -p'
-stage               : alias for 'staging:add'
-unstage             : alias for 'staging:clear'
-staged              : alias for 'staging:show'
+Aliases:
+  stage               : alias for 'staging:add'
+  pick                : alias for 'staging:add -p'
+  unstage             : alias for 'staging:clear'
+  staged              : alias for 'staging:show'
 </pre>
 </section>
 <section class="subsection" id="stash">
 <h3>Stash</h3>
 <pre>
-stash:drop          : delete latest changes from stash
-stash:list          : list stash history
-stash:pop           : restore latest changes from stash
-stash:put           : save current changes into stash
-stash:show          : show changes on stash
-
-(Aliases)
-status              : alias for 'status:compact'
+$ gi stash:
+Actions:
+  stash:drop          : delete latest changes from stash
+  stash:list          : list stash history
+  stash:pop           : restore latest changes from stash
+  stash:put           : save current changes into stash
+  stash:show          : show changes on stash
 </pre>
 </section>
 <section class="subsection" id="status">
 <h3>Status</h3>
 <pre>
-status:compact      : show status in compact format
-status:default      : show status in default format
-status:here         : same as 'stats:compact .'
-status:info         : show various infomation of current status
+$ gi status:
+Actions:
+  status:compact      : show status in compact format
+  status:default      : show status in default format
+  status:here         : same as 'stats:compact .'
+  status:info         : show various infomation of current status
 
-(Aliases)
-status              : alias for 'status:compact'
+Aliases:
+  status              : alias for 'status:compact'
 </pre>
 </section>
 <section class="subsection" id="sync">
 <h3>Sync</h3>
 <pre>
-sync:both           : download and upload commits
-sync:pull           : download commits from remote and apply them to local
-sync:push           : upload commits to remote
+$ gi sync
+Actions:
+  sync:both           : download and upload commits
+  sync:pull           : download commits from remote and apply them to local
+  sync:push           : upload commits to remote
 
-(Aliases)
-sync                : alias for 'sync:both'
-dl                  : alias for 'sync:pull'
-download            : alias for 'sync:pull'
-pull                : alias for 'sync:pull'
-push                : alias for 'sync:push'
-up                  : alias for 'sync:push'
-upload              : alias for 'sync:push'
+Aliases:
+  sync                : alias for 'sync:both'
+  dl                  : alias for 'sync:pull'
+  download            : alias for 'sync:pull'
+  pull                : alias for 'sync:pull'
+  push                : alias for 'sync:push'
+  up                  : alias for 'sync:push'
+  upload              : alias for 'sync:push'
 </pre>
 </section>
 <section class="subsection" id="tag">
 <h3>Tag</h3>
 <pre>
-tag                 : list/show/create/delete tags
-tag:create          : create a new tag
-tag:delete          : delete a tag
-tag:download        : download tags
-tag:list            : list tags
-tag:upload          : upload tags
+$ gi tag:
+Actions:
+  tag                 : list/show/create/delete tags
+  tag:create          : create a new tag
+  tag:delete          : delete a tag
+  tag:download        : download tags
+  tag:list            : list tags
+  tag:upload          : upload tags
 
-(Aliases)
-tags                : alias for 'tag:list'
+Aliases:
+  tags                : alias for 'tag:list'
 </pre>
 </section>
+</section>
+<section class="section" id="customizing-configurations">
+<h2>Customizing Configurations</h2>
+<pre>
+## create an init file
+$ gi misc:initfile &gt; ~/.gi_init.rb
+
+## set an environment variable
+$ export GI_INITFILE=~/.gi_init.rb
+</pre>
+<p>For details, see the output of `gi misc:initfile`.</p>
 </section>
 <section class="section" id="license-and-copyright">
 <h2>License and Copyright</h2>
