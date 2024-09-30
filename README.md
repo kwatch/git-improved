@@ -12,32 +12,32 @@ It provides a much better interface than Git.
 
 Command comparison:
 
-| Git Improved        | Git                                 |
-| ------------------- | ----------------------------------- |
-| gi                  | git status -sb .                    |
-| gi sw <branch>      | git checkout <branch>               |
-| gi fork <branch>    | git checkout -b <branch>            |
-| gi join             | git checkout -; git merge <branch>  |
-| gi pick .           | git add -i .                        |
-| gi track <newfile>  | git add <newfile>                   |
-| gi stage <file>     | git add <file>                      |
-| gi staged           | git diff --cached                   |
-| gi unstage          | git reset HEAD                      |
-| gi commit:rollback  | git reset HEAD^                     |
-| gi file:restore     | git reset --hard                    |
-| gi cc "<comment>"   | git commit -m "<comment>"           |
-| gi correct          | git commit --ammend                 |
-| gi fixup <commit>   | git commit --fixup=<commit>         |
-| gi changes          | git diff                            |
-| gi branches         | git branch -a                       |
-| gi commits          | git log -p                          |
-| gi tags             | git tag -l                          |
-| gi tag:upload       | git push --tags                     |
-| gi hist             | git git log --oneline --graph ...   |
-| gi histedit         | git rebase -i                       |
-| gi histedit:resume  | git rebase --continue               |
-| gi histedit:cancel  | git rebase --abort                  |
-| ...(and more)...    | ....                                |
+| Git Improved          | Git                                   |
+| --------------------- | ------------------------------------- |
+| `gi`                  | `git status -sb .`                    |
+| `gi sw <branch>`      | `git checkout <branch>`               |
+| `gi fork <branch>`    | `git checkout -b <branch>`            |
+| `gi join`             | `git checkout -; git merge <branch>`  |
+| `gi pick .`           | `git add -i .`                        |
+| `gi track <newfile>`  | `git add <newfile>`                   |
+| `gi stage <file>`     | `git add <file>`                      |
+| `gi staged`           | `git diff --cached`                   |
+| `gi unstage`          | `git reset HEAD`                      |
+| `gi commit:rollback`  | `git reset HEAD^`                     |
+| `gi file:restore`     | `git reset --hard`                    |
+| `gi cc "<comment>"`   | `git commit -m "<comment>"`           |
+| `gi correct`          | `git commit --ammend`                 |
+| `gi fixup <commit>`   | `git commit --fixup=<commit>`         |
+| `gi changes`          | `git diff`                            |
+| `gi branches`         | `git branch -a`                       |
+| `gi commits`          | `git log -p`                          |
+| `gi tags`             | `git tag -l`                          |
+| `gi tag:upload`       | `git push --tags`                     |
+| `gi hist`             | `git git log --oneline --graph ...`   |
+| `gi histedit`         | `git rebase -i`                       |
+| `gi histedit:resume`  | `git rebase --continue`               |
+| `gi histedit:cancel`  | `git rebase --abort`                  |
+| ...(and more)...      | ....                                  |
 
 GitImproved is also an example program of [Benry-CmdApp](https://kwatch.github.io/benry-ruby/benry-cmdapp.html) framework.
 Benry-CmdApp is a framework for commad-line applications which take sub-commands (like `git`, `docker`, `npm`, etc).
