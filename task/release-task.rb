@@ -108,7 +108,7 @@ How to release:
   $ git tag #{tag}		# or: git tag ruby-#{tag}
   $ git push --tags
   $ rake clean
-  $ mv #{target}.gem archive/
+  $ mkdir -p archive/ && mv #{target}.gem archive/
   $ cd ../docs/
   $ git add #{project}.html
   $ git commit -m "[main] docs: update '#{project}.html'"

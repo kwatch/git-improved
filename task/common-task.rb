@@ -9,7 +9,15 @@ defined? LICENSE    or abort "LICENSE required."
 RELEASE =~ /\A\d+\.\d+\.\d+/  or abort "RELEASE=#{RELEASE}: invalid release number."
 
 
-require 'rake/clean'
+#require 'rake/clean'
+task :clean do
+  rm_rf CLEAN
+end
+task :clobber do
+  rm_rf CLOBBER
+end
+CLEAN = []
+CLOBBER = []
 CLEAN << "build"
 CLEAN.concat Dir.glob("#{PROJECT}-*.gem").collect {|x| x.sub(/\.gem$/, '') }
 CLOBBER.concat Dir.glob("#{PROJECT}-*.gem")
@@ -17,7 +25,7 @@ CLOBBER.concat Dir.glob("#{PROJECT}-*.gem")
 
 task :default do
   sh "rake -T", verbose: false
-end unless Rake::Task.task_defined?(:default)
+end if defined?(Rake) && ! Rake::Task.task_defined?(:default)
 
 
 desc "create 'README.md' and 'doc/*.html'"
@@ -32,7 +40,6 @@ def do_doc()
     sh "../../docs/md2 #{x}.mdx > #{x}.html"
   end
 end
-
 
 desc "copy 'doc/*.html' to '../docs/'"
 task 'doc:export' do

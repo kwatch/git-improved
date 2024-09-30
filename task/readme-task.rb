@@ -6,7 +6,8 @@ README_CODESTART = /^```\w+$/        unless defined? README_CODESTART
 README_CODEEND   = /^```$/           unless defined? README_CODEEND
 README_DESTDIR   = "tmp/readme"      unless defined? README_DESTDIR
 
-require 'rake/clean'
+#require 'rake/clean'
+require_relative './common-task'
 CLEAN << "README.html"
 
 
@@ -121,7 +122,8 @@ namespace :readme do
     htmlfile = "tmp/README.html"
     sh "curl -s -o #{htmlfile} #{url}"
     #rexp = /<h(\d) dir="auto"><a id="(.*?)" class="anchor".*><\/a>(.*)<\/h\1>/
-    rexp = /<h(\d) id="user-content-.*?" dir="auto"><a class="heading-link" href="#(.*?)">(.*)<svg/
+    #rexp = /<h(\d) id="user-content-.*?" dir="auto"><a class="heading-link" href="#(.*?)">(.*)<svg/
+    rexp = /<h(\d) class="heading-element" dir="auto">(.*?)<\/h\1><a id="user-content-(.*?)" class="anchor" aria-label=".*?" href="(.*?)">/
     html_str = File.read(htmlfile, encoding: 'utf-8')
     buf = []
     html_str.scan(rexp) do
@@ -156,5 +158,22 @@ namespace :readme do
     puts "[not changed] #{mdfile}"  unless changed
   end
 
+  desc "builds table of contents (by 'md2')"
+  task :toc2 do
+    do_readme_toc2()
+  end
+
+  def do_readme_toc2()
+    sh "awk '{print}/<!-- TOC -->/{print \"\"; exit}' README.md   >  README.tmp"
+    sh "ruby ../docs/md2 --toc README.md                        >> README.tmp"
+    sh "awk '/<!-- \\/TOC -->/{print \"\"; x=1}x{print}' README.md >> README.tmp"
+    if cmp "README.md", "README.tmp"
+      puts "[not changed] README.md"
+      rm "README.tmp"
+    else
+      puts "[changed] README.md"
+      mv "README.tmp", "README.md"
+    end
+  end
 
 end
